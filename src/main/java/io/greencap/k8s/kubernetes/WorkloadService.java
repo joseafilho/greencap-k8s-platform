@@ -35,7 +35,9 @@ public class WorkloadService {
                             Optional.ofNullable(pod.getSpec()).map(s -> s.getNodeName()).orElse("-"),
                             Optional.ofNullable(pod.getStatus())
                                     .map(s -> s.getContainerStatuses())
-                                    .map(cs -> cs.stream().mapToInt(c -> c.getRestartCount()).sum())
+                                    .map(cs -> cs.stream()
+                                            .mapToInt(c -> c.getRestartCount() != null ? c.getRestartCount() : 0)
+                                            .sum())
                                     .orElse(0),
                             NamespaceService.age(pod.getMetadata().getCreationTimestamp())
                     ))

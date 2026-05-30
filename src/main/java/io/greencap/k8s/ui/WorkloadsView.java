@@ -170,6 +170,7 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
 
     private void onClusterChanged(Cluster cluster) {
         clusterContext.setCluster(cluster);
+        clusterContext.setNamespace("default");
         namespaceCombo.setEnabled(cluster != null);
         namespaceCombo.clear();
 
@@ -179,19 +180,20 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
         }
 
         try {
-            List<String> namespaces = namespaceService.listNamespaceNames(cluster);
-            namespaceCombo.setItems(namespaces);
+            List<NamespaceInfo> namespaceInfos = namespaceService.listNamespaces(cluster);
+            List<String> namespaceNames = namespaceInfos.stream().map(NamespaceInfo::name).toList();
 
-            String preferred = namespaces.contains(clusterContext.getNamespace())
+            namespaceCombo.setItems(namespaceNames);
+            nsGrid.setItems(namespaceInfos);
+
+            String preferred = namespaceNames.contains(clusterContext.getNamespace())
                     ? clusterContext.getNamespace()
-                    : namespaces.stream().filter(n -> n.equals("default")).findFirst()
-                            .orElse(namespaces.isEmpty() ? null : namespaces.get(0));
+                    : namespaceNames.stream().filter(n -> n.equals("default")).findFirst()
+                            .orElse(namespaceNames.isEmpty() ? null : namespaceNames.get(0));
 
             if (preferred != null) {
                 namespaceCombo.setValue(preferred);
             }
-
-            refreshNsGrid(cluster);
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             clearGrids();
@@ -218,19 +220,15 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
         }
     }
 
-    private void refreshNsGrid(Cluster cluster) {
+    private void refreshAll() {
+        Cluster cluster = clusterContext.getCluster();
+        if (cluster == null) return;
+        refreshWorkloads();
         try {
             nsGrid.setItems(namespaceService.listNamespaces(cluster));
         } catch (KubernetesOperationException e) {
             nsGrid.setItems(Collections.emptyList());
         }
-    }
-
-    private void refreshAll() {
-        Cluster cluster = clusterContext.getCluster();
-        if (cluster == null) return;
-        refreshWorkloads();
-        refreshNsGrid(cluster);
     }
 
     private void clearGrids() {
@@ -240,7 +238,7 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
     }
 
     private void notify(String message, NotificationVariant variant) {
-        Notification n = Notification.show(message, 4000, Notification.Position.BOTTOM_END);
-        n.addThemeVariants(variant);
+        Notification notification = Notification.show(message, 4000, Notification.Position.BOTTOM_END);
+        notification.addThemeVariants(variant);
     }
 }

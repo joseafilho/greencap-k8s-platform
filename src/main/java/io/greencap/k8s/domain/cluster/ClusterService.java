@@ -2,7 +2,6 @@ package io.greencap.k8s.domain.cluster;
 
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.greencap.k8s.config.EncryptionService;
-import io.greencap.k8s.domain.user.User;
 import io.greencap.k8s.domain.user.UserRepository;
 import io.greencap.k8s.kubernetes.KubernetesClientFactory;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ClusterService {
 
@@ -25,26 +24,29 @@ public class ClusterService {
     private final KubernetesClientFactory clientFactory;
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
     public List<Cluster> findAll() {
         return clusterRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    public Cluster createCluster(String name, ClusterProvider provider, String apiUrl, String kubeconfigContent) {
+    @Transactional
+    public Cluster createCluster(CreateClusterRequest request) {
         Cluster cluster = new Cluster();
-        cluster.setName(name);
-        cluster.setProvider(provider);
-        cluster.setApiUrl(StringUtils.isBlank(apiUrl) ? null : apiUrl.trim());
+        cluster.setName(request.name());
+        cluster.setProvider(request.provider());
+        cluster.setApiUrl(StringUtils.isBlank(request.apiUrl()) ? null : request.apiUrl().trim());
 
-        cluster.setConnectionStatus(testWithPlaintext(kubeconfigContent));
-        cluster.setKubeconfigContent(encryptionService.encrypt(kubeconfigContent));
+        cluster.setConnectionStatus(testWithPlaintext(request.kubeconfigContent()));
+        cluster.setKubeconfigContent(encryptionService.encrypt(request.kubeconfigContent()));
 
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        userRepository.findByUsername(username).ifPresent(cluster::setCreatedBy);
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            userRepository.findByUsername(authentication.getName()).ifPresent(cluster::setCreatedBy);
+        }
 
         return clusterRepository.save(cluster);
     }
 
+    @Transactional
     public ConnectionStatus testConnection(Cluster cluster) {
         if (StringUtils.isBlank(cluster.getKubeconfigContent())) {
             return ConnectionStatus.UNKNOWN;
@@ -66,7 +68,4 @@ public class ClusterService {
         }
     }
 
-    public User getClusterOwner(Cluster cluster) {
-        return cluster.getCreatedBy();
-    }
 }

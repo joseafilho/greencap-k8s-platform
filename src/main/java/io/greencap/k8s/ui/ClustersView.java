@@ -24,6 +24,7 @@ import io.greencap.k8s.domain.cluster.Cluster;
 import io.greencap.k8s.domain.cluster.ClusterProvider;
 import io.greencap.k8s.domain.cluster.ClusterService;
 import io.greencap.k8s.domain.cluster.ConnectionStatus;
+import io.greencap.k8s.domain.cluster.CreateClusterRequest;
 import jakarta.annotation.security.PermitAll;
 
 import java.io.IOException;
@@ -153,12 +154,12 @@ public class ClustersView extends VerticalLayout {
                 return;
             }
 
-            Cluster saved = clusterService.createCluster(
+            Cluster saved = clusterService.createCluster(new CreateClusterRequest(
                     nameField.getValue().trim(),
                     providerSelect.getValue(),
                     apiUrlField.getValue(),
                     kubeconfigArea.getValue()
-            );
+            ));
 
             dialog.close();
             refreshGrid();
