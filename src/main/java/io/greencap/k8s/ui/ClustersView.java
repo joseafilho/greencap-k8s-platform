@@ -60,7 +60,6 @@ public class ClustersView extends VerticalLayout {
     private Grid<Cluster> buildGrid() {
         grid.addColumn(Cluster::getName).setHeader("Nome").setSortable(true).setFlexGrow(1);
         grid.addColumn(c -> c.getProvider().name()).setHeader("Provider").setWidth("120px");
-        grid.addColumn(Cluster::getApiUrl).setHeader("API URL").setFlexGrow(2);
         grid.addComponentColumn(c -> statusBadge(c.getConnectionStatus()))
                 .setHeader("Status").setWidth("140px");
         grid.addComponentColumn(this::buildActions).setHeader("Ações").setWidth("100px");
@@ -112,10 +111,6 @@ public class ClustersView extends VerticalLayout {
         providerSelect.setValue(ClusterProvider.KUBERNETES);
         providerSelect.setWidthFull();
 
-        TextField apiUrlField = new TextField("API URL (opcional)");
-        apiUrlField.setWidthFull();
-        apiUrlField.setPlaceholder("https://api.mycluster.example.com:6443");
-
         TextArea kubeconfigArea = new TextArea("Kubeconfig YAML");
         kubeconfigArea.setWidthFull();
         kubeconfigArea.setMinHeight("200px");
@@ -135,7 +130,7 @@ public class ClustersView extends VerticalLayout {
             }
         });
 
-        FormLayout form = new FormLayout(nameField, providerSelect, apiUrlField);
+        FormLayout form = new FormLayout(nameField, providerSelect);
         form.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1));
 
         VerticalLayout content = new VerticalLayout(form, upload, kubeconfigArea);
@@ -157,7 +152,6 @@ public class ClustersView extends VerticalLayout {
             Cluster saved = clusterService.createCluster(new CreateClusterRequest(
                     nameField.getValue().trim(),
                     providerSelect.getValue(),
-                    apiUrlField.getValue(),
                     kubeconfigArea.getValue()
             ));
 

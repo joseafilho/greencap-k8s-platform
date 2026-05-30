@@ -6,7 +6,6 @@ import io.greencap.k8s.domain.user.UserRepository;
 import io.greencap.k8s.kubernetes.KubernetesClientFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +32,6 @@ public class ClusterService {
         Cluster cluster = new Cluster();
         cluster.setName(request.name());
         cluster.setProvider(request.provider());
-        cluster.setApiUrl(StringUtils.isBlank(request.apiUrl()) ? null : request.apiUrl().trim());
-
         cluster.setConnectionStatus(testWithPlaintext(request.kubeconfigContent()));
         cluster.setKubeconfigContent(encryptionService.encrypt(request.kubeconfigContent()));
 
@@ -48,7 +45,7 @@ public class ClusterService {
 
     @Transactional
     public ConnectionStatus testConnection(Cluster cluster) {
-        if (StringUtils.isBlank(cluster.getKubeconfigContent())) {
+        if (cluster.getKubeconfigContent() == null || cluster.getKubeconfigContent().isBlank()) {
             return ConnectionStatus.UNKNOWN;
         }
         String plaintext = encryptionService.decrypt(cluster.getKubeconfigContent());

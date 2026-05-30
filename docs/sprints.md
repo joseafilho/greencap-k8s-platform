@@ -11,9 +11,10 @@
 | 1 | Setup + Auth + Login | ✅ Concluído |
 | 2 | Conexão de Clusters (kubeconfig) | ✅ Concluído |
 | 3 | Visualização de Workloads | ✅ Concluído |
-| 4 | Deploy Simplificado | ⏸ Pausado |
+| 4 | Estabilização + Ambiente Local | 🔄 Em andamento |
 | 5 | Logs em Tempo Real (WebSocket) | 🔲 Pendente |
 | 6 | RBAC + Polimento + Docker final | 🔲 Pendente |
+| — | Deploy Simplificado | ⏸ Adiado indefinidamente |
 
 ---
 
@@ -43,12 +44,15 @@
 
 ## Backlog
 
-### Sprint 4 — Deploy Simplificado ⏸
-> Pausado para priorizar estabilidade e organização.
+### Sprint 4 — Estabilização + Ambiente Local 🔄
 
-- [ ] `DeployService`: cria `Deployment` (e `Service` opcional) via Fabric8
-- [ ] `DeployView`: formulário — imagem, nome, namespace, réplicas, env vars, porta
-- [ ] Após deploy, redirecionar para `WorkloadsView` com o cluster/namespace selecionado
+> Foco: garantir que tudo que foi implementado nas sprints 1–3 roda corretamente e pode ser validado visualmente. Sem novas features de escrita.
+
+- [ ] Remover campo `apiUrl` da entidade `Cluster` (ADR-0001) + migration Flyway
+- [ ] Montar `docker-compose` local com PostgreSQL para desenvolvimento
+- [ ] Validar ponta a ponta: login → clusters → workloads (pods, deployments, namespaces)
+- [ ] Documentar aviso de kubeconfig com certs por caminho na UI (demanda #3)
+- [ ] `DashboardView`: cards com resumo dos clusters registrados (demanda #5)
 
 ### Sprint 5 — Logs em Tempo Real
 - [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`

@@ -25,9 +25,6 @@ public class Cluster {
     @Column(nullable = false, length = 20)
     private ClusterProvider provider;
 
-    @Column(length = 500)
-    private String apiUrl;
-
     // stored encrypted — see EncryptionService (Sprint 2)
     @Column(columnDefinition = "TEXT")
     private String kubeconfigContent;

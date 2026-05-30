@@ -86,4 +86,16 @@ ui/          # Views Vaadin e MainLayout
 - Over-engineering: não abstrair antes da segunda ocorrência real
 - Objetos anêmicos: entidades com comportamento, não apenas getters/setters
 
+## Agent skills
 
+### Issue tracker
+
+Issues ficam como arquivos markdown em `.scratch/`. Ver `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Labels canônicos padrão do mattpocock/skills. Ver `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` na raiz + `docs/adr/`. Ver `docs/agents/domain.md`.
