@@ -65,7 +65,7 @@ public class ClustersView extends VerticalLayout {
         grid.addColumn(c -> c.getProvider().name()).setHeader("Provider").setWidth("120px");
         grid.addComponentColumn(c -> statusBadge(c.getConnectionStatus()))
                 .setHeader("Status").setWidth("140px");
-        grid.addComponentColumn(this::buildActions).setHeader("Ações").setWidth("100px");
+        grid.addComponentColumn(this::buildActions).setHeader("Ações").setWidth("140px");
         grid.setSizeFull();
         return grid;
     }
@@ -82,11 +82,37 @@ public class ClustersView extends VerticalLayout {
         return badge;
     }
 
-    private Button buildActions(Cluster cluster) {
+    private HorizontalLayout buildActions(Cluster cluster) {
         Button testBtn = new Button(VaadinIcon.CONNECT.create(), e -> testConnection(cluster));
         testBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
         testBtn.getElement().setAttribute("title", "Testar conexão");
-        return testBtn;
+
+        Button deleteBtn = new Button(VaadinIcon.TRASH.create(), e -> confirmDelete(cluster));
+        deleteBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+        deleteBtn.getElement().setAttribute("title", "Remover cluster");
+
+        return new HorizontalLayout(testBtn, deleteBtn);
+    }
+
+    private void confirmDelete(Cluster cluster) {
+        Dialog dialog = new Dialog();
+        dialog.setHeaderTitle("Remover cluster");
+
+        dialog.add(new com.vaadin.flow.component.html.Paragraph(
+                "Tem certeza que deseja remover \"" + cluster.getName() + "\"? Esta ação não pode ser desfeita."));
+
+        Button confirmBtn = new Button("Remover", e -> {
+            clusterService.deleteCluster(cluster);
+            dialog.close();
+            refreshGrid();
+            notify("Cluster " + cluster.getName() + " removido", NotificationVariant.LUMO_SUCCESS);
+        });
+        confirmBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+
+        Button cancelBtn = new Button("Cancelar", e -> dialog.close());
+
+        dialog.getFooter().add(cancelBtn, confirmBtn);
+        dialog.open();
     }
 
     private void testConnection(Cluster cluster) {

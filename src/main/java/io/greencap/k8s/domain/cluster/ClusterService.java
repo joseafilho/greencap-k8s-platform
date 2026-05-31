@@ -55,6 +55,11 @@ public class ClusterService {
         return status;
     }
 
+    @Transactional
+    public void deleteCluster(Cluster cluster) {
+        clusterRepository.delete(cluster);
+    }
+
     private ConnectionStatus testWithPlaintext(String kubeconfigContent) {
         try (KubernetesClient client = clientFactory.buildClient(kubeconfigContent)) {
             client.namespaces().list();
