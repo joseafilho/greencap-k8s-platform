@@ -1,5 +1,6 @@
 package io.greencap.k8s.domain.user;
 
+import io.greencap.k8s.domain.cluster.Cluster;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,6 +34,10 @@ public class User {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "active_cluster_id")
+    private Cluster activeCluster;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

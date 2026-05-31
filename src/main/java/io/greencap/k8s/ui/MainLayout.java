@@ -19,28 +19,68 @@ import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import io.greencap.k8s.domain.cluster.Cluster;
+import io.greencap.k8s.domain.cluster.ConnectionStatus;
+import io.greencap.k8s.domain.user.UserService;
 import io.greencap.k8s.kubernetes.ClusterContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final ClusterContext clusterContext;
-    private final Span clusterNameSpan = new Span();
+    private final HorizontalLayout clusterInfoLayout = new HorizontalLayout();
 
-    public MainLayout(ClusterContext clusterContext) {
+    public MainLayout(ClusterContext clusterContext, UserService userService) {
         this.clusterContext = clusterContext;
         getElement().setAttribute("theme", Lumo.DARK);
         setPrimarySection(Section.DRAWER);
         addToNavbar(buildNavbar());
         addToDrawer(buildDrawer());
+
+        clusterInfoLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        clusterInfoLayout.setSpacing(true);
+        clusterInfoLayout.setPadding(false);
+
+        if (clusterContext.getCluster() == null) {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            userService.findActiveCluster(username).ifPresent(clusterContext::setCluster);
+        }
     }
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
-        if (clusterContext.getCluster() != null) {
-            clusterNameSpan.setText(clusterContext.getCluster().getName());
-            clusterNameSpan.setVisible(true);
+        updateClusterInfo();
+    }
+
+    public void updateClusterInfo() {
+        clusterInfoLayout.removeAll();
+        Cluster cluster = clusterContext.getCluster();
+        if (cluster != null) {
+            Span label = new Span("Cluster:");
+            label.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY);
+
+            Span name = new Span(cluster.getName());
+            name.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.FontWeight.MEDIUM);
+
+            Span badge = new Span(cluster.getConnectionStatus().name());
+            badge.getElement().getThemeList().add("badge");
+            badge.getElement().getThemeList().add("small");
+            applyStatusTheme(badge, cluster.getConnectionStatus());
+
+            clusterInfoLayout.add(label, name, badge);
         } else {
-            clusterNameSpan.setVisible(false);
+            Span noCluster = new Span("Nenhum cluster ativo");
+            noCluster.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.SMALL);
+            clusterInfoLayout.add(noCluster);
+        }
+    }
+
+    private void applyStatusTheme(Span badge, ConnectionStatus status) {
+        switch (status) {
+            case CONNECTED    -> badge.getElement().getThemeList().add("success");
+            case ERROR        -> badge.getElement().getThemeList().add("error");
+            case DISCONNECTED -> badge.getElement().getThemeList().add("contrast");
+            default           -> {}
         }
     }
 
@@ -56,7 +96,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         logout.getElement().setAttribute("title", "Logout");
 
-        HorizontalLayout navbar = new HorizontalLayout(toggle, spacer, logout);
+        HorizontalLayout navbar = new HorizontalLayout(toggle, spacer, clusterInfoLayout, logout);
         navbar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         navbar.expand(spacer);
         navbar.setWidthFull();
@@ -78,7 +118,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         return drawer;
     }
 
-    private VerticalLayout buildLogoSection() {
+    private HorizontalLayout buildLogoSection() {
         Image logo = new Image("greencap.png", "GreenCap K8s");
         logo.setHeight("36px");
 
@@ -88,20 +128,11 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         HorizontalLayout logoRow = new HorizontalLayout(logo, appName);
         logoRow.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         logoRow.setSpacing(true);
-        logoRow.addClassNames(LumoUtility.Padding.Horizontal.MEDIUM, LumoUtility.Padding.Top.MEDIUM);
-
-        clusterNameSpan.addClassNames(
-                LumoUtility.FontSize.XSMALL,
-                LumoUtility.TextColor.SECONDARY,
+        logoRow.addClassNames(
                 LumoUtility.Padding.Horizontal.MEDIUM,
-                LumoUtility.Padding.Bottom.SMALL
+                LumoUtility.Padding.Vertical.MEDIUM
         );
-        clusterNameSpan.setVisible(false);
-
-        VerticalLayout section = new VerticalLayout(logoRow, clusterNameSpan);
-        section.setPadding(false);
-        section.setSpacing(false);
-        return section;
+        return logoRow;
     }
 
     private VerticalLayout buildNavSection(String label, SideNav nav) {

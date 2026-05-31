@@ -1,5 +1,6 @@
 package io.greencap.k8s.domain.user;
 
+import io.greencap.k8s.domain.cluster.Cluster;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -7,6 +8,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,6 +30,19 @@ public class UserService implements UserDetailsService {
                 .password(user.getPasswordHash())
                 .roles(user.getRole().name())
                 .build();
+    }
+
+    @Transactional
+    public void updateActiveCluster(String username, Cluster cluster) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setActiveCluster(cluster);
+            userRepository.save(user);
+        });
+    }
+
+    public Optional<Cluster> findActiveCluster(String username) {
+        return userRepository.findByUsernameWithActiveCluster(username)
+                .map(User::getActiveCluster);
     }
 
     @Transactional

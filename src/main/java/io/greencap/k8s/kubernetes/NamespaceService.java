@@ -23,8 +23,8 @@ public class NamespaceService {
     private final EncryptionService encryptionService;
 
     public List<NamespaceInfo> listNamespaces(Cluster cluster) {
-        String kubeconfig = encryptionService.decrypt(cluster.getKubeconfigContent());
-        try (KubernetesClient client = clientFactory.buildClient(kubeconfig)) {
+        try (KubernetesClient client = clientFactory.buildClient(
+                encryptionService.decrypt(cluster.getKubeconfigContent()))) {
             return client.namespaces().list().getItems().stream()
                     .map(ns -> new NamespaceInfo(
                             ns.getMetadata().getName(),

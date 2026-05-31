@@ -1,5 +1,6 @@
 package io.greencap.k8s.ui;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -16,15 +17,14 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import io.greencap.k8s.domain.cluster.Cluster;
-import io.greencap.k8s.domain.cluster.ClusterService;
 import io.greencap.k8s.kubernetes.ClusterContext;
 import io.greencap.k8s.kubernetes.KubernetesOperationException;
 import io.greencap.k8s.kubernetes.NamespaceService;
 import io.greencap.k8s.kubernetes.WorkloadService;
 import io.greencap.k8s.kubernetes.dto.DeploymentInfo;
-import io.greencap.k8s.kubernetes.dto.NamespaceInfo;
 import io.greencap.k8s.kubernetes.dto.PodInfo;
 import jakarta.annotation.security.PermitAll;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,45 +34,66 @@ import java.util.List;
 @PermitAll
 public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver {
 
-    private final ClusterService clusterService;
     private final NamespaceService namespaceService;
     private final WorkloadService workloadService;
     private final ClusterContext clusterContext;
 
-    private final ComboBox<Cluster> clusterCombo = new ComboBox<>("Cluster");
     private final ComboBox<String> namespaceCombo = new ComboBox<>("Namespace");
     private final Grid<PodInfo> podGrid = new Grid<>(PodInfo.class, false);
     private final Grid<DeploymentInfo> deployGrid = new Grid<>(DeploymentInfo.class, false);
-    private final Grid<NamespaceInfo> nsGrid = new Grid<>(NamespaceInfo.class, false);
 
-    public WorkloadsView(ClusterService clusterService, NamespaceService namespaceService,
-                         WorkloadService workloadService, ClusterContext clusterContext) {
-        this.clusterService = clusterService;
+    private final VerticalLayout noClusterMessage;
+    private final HorizontalLayout toolbar;
+    private final TabSheet tabs;
+
+    public WorkloadsView(NamespaceService namespaceService, WorkloadService workloadService,
+                         ClusterContext clusterContext) {
         this.namespaceService = namespaceService;
         this.workloadService = workloadService;
         this.clusterContext = clusterContext;
 
         setSizeFull();
         setPadding(true);
-        add(buildToolbar(), buildTabs());
+
+        noClusterMessage = buildNoClusterMessage();
+        toolbar = buildToolbar();
+        tabs = buildTabs();
+
+        add(noClusterMessage, toolbar, tabs);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        clusterCombo.setItems(clusterService.findAll());
-        if (clusterContext.getCluster() != null) {
-            clusterCombo.setValue(clusterContext.getCluster());
+        boolean hasCluster = clusterContext.getCluster() != null;
+        noClusterMessage.setVisible(!hasCluster);
+        toolbar.setVisible(hasCluster);
+        tabs.setVisible(hasCluster);
+        if (hasCluster) {
+            loadNamespaces();
         }
+    }
+
+    // ── No-cluster state ─────────────────────────────────────────────────────
+
+    private VerticalLayout buildNoClusterMessage() {
+        Span text = new Span("Nenhum cluster ativo. Selecione um cluster em Configuração → Clusters.");
+        text.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.MEDIUM);
+
+        Button goToClusters = new Button("Ir para Clusters", VaadinIcon.SERVER.create(),
+                e -> UI.getCurrent().navigate(ClustersView.class));
+        goToClusters.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+
+        VerticalLayout layout = new VerticalLayout(text, goToClusters);
+        layout.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        layout.setJustifyContentMode(JustifyContentMode.CENTER);
+        layout.setSizeFull();
+        layout.setVisible(false);
+        return layout;
     }
 
     // ── Toolbar ──────────────────────────────────────────────────────────────
 
     private HorizontalLayout buildToolbar() {
-        clusterCombo.setItemLabelGenerator(Cluster::getName);
-        clusterCombo.setPlaceholder("Selecione um cluster...");
-        clusterCombo.setWidthFull();
-        clusterCombo.addValueChangeListener(e -> onClusterChanged(e.getValue()));
-
         namespaceCombo.setPlaceholder("Namespace...");
         namespaceCombo.setWidthFull();
         namespaceCombo.setEnabled(false);
@@ -87,11 +108,12 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
         refreshBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         refreshBtn.getElement().setAttribute("title", "Atualizar");
 
-        HorizontalLayout toolbar = new HorizontalLayout(clusterCombo, namespaceCombo, refreshBtn);
-        toolbar.setDefaultVerticalComponentAlignment(Alignment.END);
-        toolbar.setWidthFull();
-        toolbar.expand(clusterCombo, namespaceCombo);
-        return toolbar;
+        HorizontalLayout layout = new HorizontalLayout(namespaceCombo, refreshBtn);
+        layout.setDefaultVerticalComponentAlignment(Alignment.END);
+        layout.setWidthFull();
+        layout.expand(namespaceCombo);
+        layout.setVisible(false);
+        return layout;
     }
 
     // ── Tabs & Grids ─────────────────────────────────────────────────────────
@@ -99,14 +121,13 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
     private TabSheet buildTabs() {
         buildPodGrid();
         buildDeployGrid();
-        buildNsGrid();
 
-        TabSheet tabs = new TabSheet();
-        tabs.setSizeFull();
-        tabs.add("Pods", podGrid);
-        tabs.add("Deployments", deployGrid);
-        tabs.add("Namespaces", nsGrid);
-        return tabs;
+        TabSheet tabSheet = new TabSheet();
+        tabSheet.setSizeFull();
+        tabSheet.add("Pods", podGrid);
+        tabSheet.add("Deployments", deployGrid);
+        tabSheet.setVisible(false);
+        return tabSheet;
     }
 
     private void buildPodGrid() {
@@ -129,14 +150,6 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
         deployGrid.addColumn(DeploymentInfo::age).setHeader("Idade").setWidth("80px");
         deployGrid.setSizeFull();
         deployGrid.setItems(Collections.emptyList());
-    }
-
-    private void buildNsGrid() {
-        nsGrid.addColumn(NamespaceInfo::name).setHeader("Nome").setSortable(true).setFlexGrow(1);
-        nsGrid.addComponentColumn(n -> phaseBadge(n.phase())).setHeader("Status").setWidth("120px");
-        nsGrid.addColumn(NamespaceInfo::age).setHeader("Idade").setWidth("80px");
-        nsGrid.setSizeFull();
-        nsGrid.setItems(Collections.emptyList());
     }
 
     // ── Badges ───────────────────────────────────────────────────────────────
@@ -168,23 +181,13 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
 
     // ── Data loading ─────────────────────────────────────────────────────────
 
-    private void onClusterChanged(Cluster cluster) {
-        clusterContext.setCluster(cluster);
-        clusterContext.setNamespace("default");
-        namespaceCombo.setEnabled(cluster != null);
-        namespaceCombo.clear();
-
-        if (cluster == null) {
-            clearGrids();
-            return;
-        }
-
+    private void loadNamespaces() {
+        Cluster cluster = clusterContext.getCluster();
         try {
-            List<NamespaceInfo> namespaceInfos = namespaceService.listNamespaces(cluster);
-            List<String> namespaceNames = namespaceInfos.stream().map(NamespaceInfo::name).toList();
+            List<String> namespaceNames = namespaceService.listNamespaceNames(cluster);
 
             namespaceCombo.setItems(namespaceNames);
-            nsGrid.setItems(namespaceInfos);
+            namespaceCombo.setEnabled(true);
 
             String preferred = namespaceNames.contains(clusterContext.getNamespace())
                     ? clusterContext.getNamespace()
@@ -196,7 +199,6 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
             }
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
-            clearGrids();
         }
     }
 
@@ -221,20 +223,8 @@ public class WorkloadsView extends VerticalLayout implements BeforeEnterObserver
     }
 
     private void refreshAll() {
-        Cluster cluster = clusterContext.getCluster();
-        if (cluster == null) return;
+        if (clusterContext.getCluster() == null) return;
         refreshWorkloads();
-        try {
-            nsGrid.setItems(namespaceService.listNamespaces(cluster));
-        } catch (KubernetesOperationException e) {
-            nsGrid.setItems(Collections.emptyList());
-        }
-    }
-
-    private void clearGrids() {
-        podGrid.setItems(Collections.emptyList());
-        deployGrid.setItems(Collections.emptyList());
-        nsGrid.setItems(Collections.emptyList());
     }
 
     private void notify(String message, NotificationVariant variant) {

@@ -14,8 +14,8 @@
 | 4 | Estabilização + Ambiente Local | ✅ Concluído |
 | 5 | Redesign de Layout + UX | ✅ Concluído |
 | 6 | Login, Logout + UX de autenticação | ✅ Concluído |
-| 7 | Logs em Tempo Real (WebSocket) | 🔲 Pendente |
-| 8 | RBAC + Polimento + Docker final | 🔲 Pendente |
+| 7 | Cluster Atual por Sessão | ✅ Concluído |
+| — | RBAC + Polimento + Docker final | ⏸ Adiado indefinidamente |
 | — | Deploy Simplificado | ⏸ Adiado indefinidamente |
 
 ---
@@ -63,14 +63,30 @@
 - Logo `greencap.png` centralizada acima do formulário (140px)
 - Logout via invalidação da sessão HTTP (`WrappedSession.invalidate()`) — sem GET para `/logout`
 
+### Sprint 7 — Cluster Atual por Sessão
+- Radio button (coluna "Ativo") no grid de `ClustersView` — seleção imediata define cluster ativo
+- `ClusterContext` atualizado com cluster selecionado + namespace resetado para `"default"`
+- Remoção do cluster ativo limpa `ClusterContext` automaticamente
+- Navbar superior exibe `Cluster: <nome> <badge ConnectionStatus>`; "Nenhum cluster ativo" quando vazio
+- Navbar atualiza imediatamente ao selecionar o cluster (sem precisar navegar)
+- `WorkloadsView` usa `ClusterContext` diretamente — sem combobox de cluster; aviso inline com botão de navegação quando sem cluster ativo
+- Aba "Namespaces" removida de `WorkloadsView` (redundante com o combobox de namespace)
+- Cluster ativo persistido por usuário no banco (`active_cluster_id` em `users`) — restaurado automaticamente após login
+- `@EqualsAndHashCode(of = "id")` adicionado à entidade `Cluster`
+- Foco automático no campo Nome ao abrir dialog de novo cluster
+- Hint do textarea de kubeconfig reforça uso de `kubectl config view --flatten --minify`
+- Migration `V5`: normaliza valores de `ClusterProvider` para `Kubernetes`/`OpenShift`
+- Migration `V6`: adiciona `active_cluster_id` em `users`
+- Correção: `decrypt()` movido para dentro do `try-catch` em `NamespaceService` e `WorkloadService`
+- `ClusterProvider` enum renomeado para `Kubernetes`/`OpenShift` (sem uppercase)
+
 ---
 
 ## Backlog
 
-### Sprint 7 — Logs em Tempo Real
-- [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`
-- [ ] WebSocket (STOMP) para push dos logs para o browser
-- [ ] `LogsView`: seleciona pod → exibe log ao vivo
+### Sprint 7 — Cluster Atual por Sessão (Concluída)
+
+Movida para **Sprints Concluídas**.
 
 ### Sprint 8 — RBAC + Polimento + Docker Final
 - [ ] Controle de acesso por role (`ADMIN`, `OPERATOR`, `VIEWER`) com `@Secured` nas views

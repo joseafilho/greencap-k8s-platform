@@ -1,11 +1,11 @@
 package io.greencap.k8s.ui;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -18,6 +18,9 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import io.greencap.k8s.domain.cluster.Cluster;
@@ -25,8 +28,11 @@ import io.greencap.k8s.domain.cluster.ClusterProvider;
 import io.greencap.k8s.domain.cluster.ClusterService;
 import io.greencap.k8s.domain.cluster.ConnectionStatus;
 import io.greencap.k8s.domain.cluster.CreateClusterRequest;
+import io.greencap.k8s.domain.user.UserService;
+import io.greencap.k8s.kubernetes.ClusterContext;
 import io.greencap.k8s.kubernetes.KubeconfigValidator;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -34,17 +40,26 @@ import java.nio.charset.StandardCharsets;
 @Route(value = "clusters", layout = MainLayout.class)
 @PageTitle("Clusters — GreenCap K8s")
 @PermitAll
-public class ClustersView extends VerticalLayout {
+public class ClustersView extends VerticalLayout implements BeforeEnterObserver {
 
     private final ClusterService clusterService;
     private final KubeconfigValidator kubeconfigValidator;
+    private final ClusterContext clusterContext;
+    private final UserService userService;
     private final Grid<Cluster> grid = new Grid<>(Cluster.class, false);
 
-    public ClustersView(ClusterService clusterService, KubeconfigValidator kubeconfigValidator) {
+    public ClustersView(ClusterService clusterService, KubeconfigValidator kubeconfigValidator,
+                        ClusterContext clusterContext, UserService userService) {
         this.clusterService = clusterService;
         this.kubeconfigValidator = kubeconfigValidator;
+        this.clusterContext = clusterContext;
+        this.userService = userService;
         setSizeFull();
         add(buildToolbar(), buildGrid());
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
         refreshGrid();
     }
 
@@ -61,6 +76,7 @@ public class ClustersView extends VerticalLayout {
     }
 
     private Grid<Cluster> buildGrid() {
+        grid.addComponentColumn(this::buildRadioCell).setHeader("Ativo").setWidth("70px").setFlexGrow(0);
         grid.addColumn(Cluster::getName).setHeader("Nome").setSortable(true).setFlexGrow(1);
         grid.addColumn(c -> c.getProvider().name()).setHeader("Provider").setWidth("120px");
         grid.addComponentColumn(c -> statusBadge(c.getConnectionStatus()))
@@ -68,6 +84,45 @@ public class ClustersView extends VerticalLayout {
         grid.addComponentColumn(this::buildActions).setHeader("Ações").setWidth("140px");
         grid.setSizeFull();
         return grid;
+    }
+
+    private Div buildRadioCell(Cluster cluster) {
+        Element inputEl = new Element("input");
+        inputEl.setAttribute("type", "radio");
+        inputEl.setAttribute("name", "cluster-active");
+        inputEl.getStyle().set("cursor", "pointer").set("width", "16px").set("height", "16px");
+        if (isActiveCluster(cluster)) {
+            inputEl.setAttribute("checked", "true");
+        }
+        inputEl.addEventListener("change", e -> activateCluster(cluster));
+
+        Div wrapper = new Div();
+        wrapper.getElement().appendChild(inputEl);
+        wrapper.getStyle().set("display", "flex").set("justify-content", "center").set("align-items", "center");
+        return wrapper;
+    }
+
+    private boolean isActiveCluster(Cluster cluster) {
+        return clusterContext.getCluster() != null
+                && clusterContext.getCluster().getId().equals(cluster.getId());
+    }
+
+    private void activateCluster(Cluster cluster) {
+        clusterContext.setCluster(cluster);
+        clusterContext.setNamespace("default");
+        persistActiveCluster(cluster);
+        refreshGrid();
+        getUI().flatMap(ui -> ui.getChildren()
+                .filter(c -> c instanceof MainLayout)
+                .map(c -> (MainLayout) c)
+                .findFirst())
+                .ifPresent(MainLayout::updateClusterInfo);
+        notify("Cluster \"" + cluster.getName() + "\" definido como atual", NotificationVariant.LUMO_SUCCESS);
+    }
+
+    private void persistActiveCluster(Cluster cluster) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        userService.updateActiveCluster(username, cluster);
     }
 
     private Span statusBadge(ConnectionStatus status) {
@@ -102,6 +157,11 @@ public class ClustersView extends VerticalLayout {
                 "Tem certeza que deseja remover \"" + cluster.getName() + "\"? Esta ação não pode ser desfeita."));
 
         Button confirmBtn = new Button("Remover", e -> {
+            if (isActiveCluster(cluster)) {
+                clusterContext.setCluster(null);
+                clusterContext.setNamespace("default");
+                persistActiveCluster(null);
+            }
             clusterService.deleteCluster(cluster);
             dialog.close();
             refreshGrid();
@@ -117,6 +177,12 @@ public class ClustersView extends VerticalLayout {
 
     private void testConnection(Cluster cluster) {
         ConnectionStatus status = clusterService.testConnection(cluster);
+        if (isActiveCluster(cluster)) {
+            clusterContext.setCluster(clusterService.findAll().stream()
+                    .filter(c -> c.getId().equals(cluster.getId()))
+                    .findFirst()
+                    .orElse(null));
+        }
         refreshGrid();
         if (status == ConnectionStatus.CONNECTED) {
             notify("Conexão com " + cluster.getName() + " OK", NotificationVariant.LUMO_SUCCESS);
@@ -137,13 +203,17 @@ public class ClustersView extends VerticalLayout {
         Select<ClusterProvider> providerSelect = new Select<>();
         providerSelect.setLabel("Provider");
         providerSelect.setItems(ClusterProvider.values());
-        providerSelect.setValue(ClusterProvider.KUBERNETES);
+        providerSelect.setValue(ClusterProvider.Kubernetes);
         providerSelect.setWidthFull();
 
         TextArea kubeconfigArea = new TextArea("Kubeconfig YAML");
         kubeconfigArea.setWidthFull();
         kubeconfigArea.setMinHeight("200px");
-        kubeconfigArea.setPlaceholder("Cole o conteúdo do kubeconfig ou faça upload do arquivo...");
+        kubeconfigArea.setPlaceholder(
+                "Cole o conteúdo do kubeconfig ou faça upload do arquivo.\n\n" +
+                "⚠️ O kubeconfig deve ser portável e seguro: gere-o com\n" +
+                "kubectl config view --flatten --minify\n" +
+                "para embutir certificados e exportar apenas o contexto necessário.");
 
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
@@ -211,6 +281,7 @@ public class ClustersView extends VerticalLayout {
 
         dialog.getFooter().add(cancelBtn, saveBtn);
         dialog.open();
+        nameField.focus();
     }
 
     private void refreshGrid() {

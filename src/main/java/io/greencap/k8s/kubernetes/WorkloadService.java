@@ -21,8 +21,8 @@ public class WorkloadService {
     private final EncryptionService encryptionService;
 
     public List<PodInfo> listPods(Cluster cluster, String namespace) {
-        String kubeconfig = encryptionService.decrypt(cluster.getKubeconfigContent());
-        try (KubernetesClient client = clientFactory.buildClient(kubeconfig)) {
+        try (KubernetesClient client = clientFactory.buildClient(
+                encryptionService.decrypt(cluster.getKubeconfigContent()))) {
             var items = isAllNamespaces(namespace)
                     ? client.pods().inAnyNamespace().list().getItems()
                     : client.pods().inNamespace(namespace).list().getItems();
@@ -49,8 +49,8 @@ public class WorkloadService {
     }
 
     public List<DeploymentInfo> listDeployments(Cluster cluster, String namespace) {
-        String kubeconfig = encryptionService.decrypt(cluster.getKubeconfigContent());
-        try (KubernetesClient client = clientFactory.buildClient(kubeconfig)) {
+        try (KubernetesClient client = clientFactory.buildClient(
+                encryptionService.decrypt(cluster.getKubeconfigContent()))) {
             var items = isAllNamespaces(namespace)
                     ? client.apps().deployments().inAnyNamespace().list().getItems()
                     : client.apps().deployments().inNamespace(namespace).list().getItems();

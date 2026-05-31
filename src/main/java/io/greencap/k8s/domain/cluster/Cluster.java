@@ -2,6 +2,7 @@ package io.greencap.k8s.domain.cluster;
 
 import io.greencap.k8s.domain.user.User;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,6 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "clusters")
 @Getter
 @Setter
+@EqualsAndHashCode(of = "id")
 public class Cluster {
 
     @Id
