@@ -128,7 +128,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             lastLoadedCluster = cluster;
         } catch (KubernetesOperationException e) {
             Notification notification = Notification.show(
-                    "Erro ao carregar namespaces: " + e.getMessage(), 4000, Notification.Position.BOTTOM_END);
+                    "Erro ao carregar namespaces: " + e.getMessage(), UiConstants.NOTIFICATION_DURATION_MS, Notification.Position.BOTTOM_END);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }

@@ -109,7 +109,7 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private void notify(String message, NotificationVariant variant) {
-        Notification notification = Notification.show(message, 4000, Notification.Position.BOTTOM_END);
+        Notification notification = Notification.show(message, UiConstants.NOTIFICATION_DURATION_MS, Notification.Position.BOTTOM_END);
         notification.addThemeVariants(variant);
     }
 }
