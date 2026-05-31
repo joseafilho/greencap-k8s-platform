@@ -12,8 +12,9 @@
 | 2 | Conexão de Clusters (kubeconfig) | ✅ Concluído |
 | 3 | Visualização de Workloads | ✅ Concluído |
 | 4 | Estabilização + Ambiente Local | ✅ Concluído |
-| 5 | Logs em Tempo Real (WebSocket) | 🔲 Pendente |
-| 6 | RBAC + Polimento + Docker final | 🔲 Pendente |
+| 5 | Redesign de Layout + UX | 🔄 Em andamento |
+| 6 | Logs em Tempo Real (WebSocket) | 🔲 Pendente |
+| 7 | RBAC + Polimento + Docker final | 🔲 Pendente |
 | — | Deploy Simplificado | ⏸ Adiado indefinidamente |
 
 ---
@@ -51,12 +52,23 @@
 
 ## Backlog
 
-### Sprint 5 — Logs em Tempo Real
+### Sprint 5 — Redesign de Layout + UX 🔄
+
+> Foco: identidade visual, dark theme e estrutura de navegação inspirada no demo `sample-base/greencap_claude_demo.png`.
+
+- [x] Dark theme fixo via Lumo (`getElement().setAttribute("theme", Lumo.DARK)`)
+- [x] Logo `greencap.png` no topo da sidebar
+- [x] Cluster ativo exibido abaixo do logo (atualizado por `AfterNavigationObserver`)
+- [x] Sidebar com 3 seções: VISÃO GERAL, OBSERVABILIDADE, CONFIGURAÇÃO
+- [x] Itens futuros visíveis e acinzentados (desabilitados via `pointer-events: none`)
+- [x] `SecurityConfig` liberando `/greencap.png` para acesso público
+
+### Sprint 6 — Logs em Tempo Real
 - [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`
 - [ ] WebSocket (STOMP) para push dos logs para o browser
-- [ ] `LogsView` ou painel lateral na `WorkloadsView`: seleciona pod → exibe log ao vivo
+- [ ] `LogsView`: seleciona pod → exibe log ao vivo
 
-### Sprint 6 — RBAC + Polimento + Docker Final
+### Sprint 7 — RBAC + Polimento + Docker Final
 - [ ] Controle de acesso por role (`ADMIN`, `OPERATOR`, `VIEWER`) com `@Secured` nas views
 - [ ] `UserManagementView` (apenas ADMIN): criar/desativar usuários
 - [ ] Página de erro customizada no Vaadin
