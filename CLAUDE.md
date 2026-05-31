@@ -53,7 +53,7 @@ ui/          # Views Vaadin e MainLayout
 - Co-autor: `Co-Authored-By: Claude Sonnet`
 
 ## Comentários
-- Todos em inglês
+- Todos os comentários criados no código devem está em inglês
 
 ## Code Quality
 
