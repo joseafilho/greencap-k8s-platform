@@ -25,6 +25,7 @@ import io.greencap.k8s.domain.cluster.ClusterProvider;
 import io.greencap.k8s.domain.cluster.ClusterService;
 import io.greencap.k8s.domain.cluster.ConnectionStatus;
 import io.greencap.k8s.domain.cluster.CreateClusterRequest;
+import io.greencap.k8s.kubernetes.KubeconfigValidator;
 import jakarta.annotation.security.PermitAll;
 
 import java.io.IOException;
@@ -36,10 +37,12 @@ import java.nio.charset.StandardCharsets;
 public class ClustersView extends VerticalLayout {
 
     private final ClusterService clusterService;
+    private final KubeconfigValidator kubeconfigValidator;
     private final Grid<Cluster> grid = new Grid<>(Cluster.class, false);
 
-    public ClustersView(ClusterService clusterService) {
+    public ClustersView(ClusterService clusterService, KubeconfigValidator kubeconfigValidator) {
         this.clusterService = clusterService;
+        this.kubeconfigValidator = kubeconfigValidator;
         setSizeFull();
         add(buildToolbar(), buildGrid());
         refreshGrid();
@@ -118,13 +121,16 @@ public class ClustersView extends VerticalLayout {
 
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
-        upload.setAcceptedFileTypes(".yaml", ".yml", ".kubeconfig", ".conf", ".config");
         upload.setMaxFileSize(512 * 1024);
         upload.setDropLabel(new Span("Arraste o kubeconfig aqui"));
         upload.addSucceededListener(e -> {
             try {
                 String content = new String(buffer.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
                 kubeconfigArea.setValue(content);
+                kubeconfigValidator.findPathReferencedCertificates(content).ifPresent(warning -> {
+                    kubeconfigArea.setErrorMessage(warning);
+                    kubeconfigArea.setInvalid(true);
+                });
             } catch (IOException ex) {
                 notify("Erro ao ler arquivo", NotificationVariant.LUMO_ERROR);
             }
@@ -146,6 +152,13 @@ public class ClustersView extends VerticalLayout {
             }
             if (kubeconfigArea.isEmpty()) {
                 notify("Kubeconfig é obrigatório", NotificationVariant.LUMO_ERROR);
+                return;
+            }
+
+            var certWarning = kubeconfigValidator.findPathReferencedCertificates(kubeconfigArea.getValue());
+            if (certWarning.isPresent()) {
+                kubeconfigArea.setErrorMessage(certWarning.get());
+                kubeconfigArea.setInvalid(true);
                 return;
             }
 
