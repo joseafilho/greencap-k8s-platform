@@ -11,7 +11,7 @@
 | 1 | Setup + Auth + Login | ✅ Concluído |
 | 2 | Conexão de Clusters (kubeconfig) | ✅ Concluído |
 | 3 | Visualização de Workloads | ✅ Concluído |
-| 4 | Estabilização + Ambiente Local | 🔄 Em andamento |
+| 4 | Estabilização + Ambiente Local | ✅ Concluído |
 | 5 | Logs em Tempo Real (WebSocket) | 🔲 Pendente |
 | 6 | RBAC + Polimento + Docker final | 🔲 Pendente |
 | — | Deploy Simplificado | ⏸ Adiado indefinidamente |
@@ -40,19 +40,16 @@
 - `NamespaceService`: lista namespaces
 - `WorkloadsView`: seletor de cluster + namespace, TabSheet (Pods | Deployments | Namespaces), badges de status
 
+### Sprint 4 — Estabilização + Ambiente Local
+- `apiUrl` removido da entidade `Cluster` — kubeconfig é fonte única de verdade (ADR-0001, migration V4)
+- `docker-compose.dev.yml` com PostgreSQL para desenvolvimento local
+- `DashboardView`: cards com contagem por `ConnectionStatus`, badge colorido, navegação para `ClustersView`
+- `KubeconfigValidator`: detecta certs por caminho no YAML e bloqueia o salvar com instrução de correção
+- Filtro de extensão removido do `Upload` — aceita arquivo `config` sem extensão
+
 ---
 
 ## Backlog
-
-### Sprint 4 — Estabilização + Ambiente Local 🔄
-
-> Foco: garantir que tudo que foi implementado nas sprints 1–3 roda corretamente e pode ser validado visualmente. Sem novas features de escrita.
-
-- [ ] Remover campo `apiUrl` da entidade `Cluster` (ADR-0001) + migration Flyway
-- [ ] Montar `docker-compose` local com PostgreSQL para desenvolvimento
-- [ ] Validar ponta a ponta: login → clusters → workloads (pods, deployments, namespaces)
-- [ ] Documentar aviso de kubeconfig com certs por caminho na UI (demanda #3)
-- [ ] `DashboardView`: cards com resumo dos clusters registrados (demanda #5)
 
 ### Sprint 5 — Logs em Tempo Real
 - [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`
@@ -74,9 +71,9 @@
 |---|------|-----------|--------|
 | 1 | 🐛 Bug | Filtro de upload no dialog de cluster não aceitava arquivos sem extensão | ✅ Corrigido |
 | 2 | 🐛 Bug | Hash BCrypt hardcoded na migration V1 era inválido | ✅ Corrigido via `DataInitializer` |
-| 3 | 💡 Melhoria | Kubeconfig com certs por caminho falha fora da máquina local — usar `kubectl config view --flatten --minify` | 📝 Documentado |
+| 3 | 💡 Melhoria | Kubeconfig com certs por caminho falha fora da máquina local — `KubeconfigValidator` detecta e bloqueia com instrução de correção | ✅ Corrigido |
 | 4 | 💡 Melhoria | Testes unitários: `UserService`, `ClusterService`, `WorkloadService` | 🔲 Sprint 6 |
-| 5 | 💡 Melhoria | `DashboardView` ainda é placeholder — adicionar cards com resumo dos clusters | 🔲 Sprint 6 |
+| 5 | 💡 Melhoria | `DashboardView` ainda é placeholder — adicionar cards com resumo dos clusters | ✅ Corrigido |
 
 ---
 

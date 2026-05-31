@@ -1,6 +1,6 @@
 # 03 — DashboardView com cards de clusters
 
-Status: ready-for-agent
+Status: done
 
 ## Contexto
 

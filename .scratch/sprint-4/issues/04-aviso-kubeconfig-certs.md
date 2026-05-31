@@ -1,6 +1,6 @@
 # 04 — Aviso de kubeconfig com certs por caminho
 
-Status: ready-for-human
+Status: done
 
 ## Contexto
 
