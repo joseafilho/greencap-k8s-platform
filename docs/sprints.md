@@ -15,8 +15,7 @@
 | 5 | Redesign de Layout + UX | ✅ Concluído |
 | 6 | Login, Logout + UX de autenticação | ✅ Concluído |
 | 7 | Cluster Atual por Sessão | ✅ Concluído |
-| — | RBAC + Polimento + Docker final | ⏸ Adiado indefinidamente |
-| — | Deploy Simplificado | ⏸ Adiado indefinidamente |
+| 8 | Refinamento de Navegação + Workloads | ✅ Concluído |
 
 ---
 
@@ -80,6 +79,17 @@
 - Correção: `decrypt()` movido para dentro do `try-catch` em `NamespaceService` e `WorkloadService`
 - `ClusterProvider` enum renomeado para `Kubernetes`/`OpenShift` (sem uppercase)
 
+### Sprint 8 — Refinamento de Navegação + Workloads
+- `WorkloadsView` dividida em `PodsView` (`/workloads/pods`) e `DeploymentsView` (`/workloads/deployments`)
+- Menu lateral "Workloads" vira item pai colapsável com sub-itens Pods e Deployments
+- Item "Namespaces" renomeado para "Topologia" (placeholder desabilitado para sprint futura)
+- Item "Deploys" removido do menu (substituído pelo sub-menu de Workloads)
+- Namespace selector (`ComboBox`) movido da toolbar de `WorkloadsView` para a navbar global do `MainLayout`
+- Namespace selector oculto quando não há cluster ativo; visível e persistente após ativar cluster
+- Namespaces recarregados apenas quando o cluster muda — sem chamadas redundantes ao Kubernetes API
+- Ao trocar cluster: namespace zera, lista recarrega, seleciona `default` (ou primeiro disponível)
+- Trocar namespace na navbar re-navega para a view ativa, disparando `beforeEnter` e recarregando dados
+
 ---
 
 ## Backlog
@@ -88,7 +98,7 @@
 
 Movida para **Sprints Concluídas**.
 
-### Sprint 8 — RBAC + Polimento + Docker Final
+### RBAC + Polimento + Docker Final
 - [ ] Controle de acesso por role (`ADMIN`, `OPERATOR`, `VIEWER`) com `@Secured` nas views
 - [ ] `UserManagementView` (apenas ADMIN): criar/desativar usuários
 - [ ] Página de erro customizada no Vaadin

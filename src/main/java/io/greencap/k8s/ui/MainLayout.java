@@ -6,10 +6,13 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -23,23 +26,38 @@ import io.greencap.k8s.domain.cluster.Cluster;
 import io.greencap.k8s.domain.cluster.ConnectionStatus;
 import io.greencap.k8s.domain.user.UserService;
 import io.greencap.k8s.kubernetes.ClusterContext;
+import io.greencap.k8s.kubernetes.KubernetesOperationException;
+import io.greencap.k8s.kubernetes.NamespaceService;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.List;
 
 public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final ClusterContext clusterContext;
+    private final NamespaceService namespaceService;
     private final HorizontalLayout clusterInfoLayout = new HorizontalLayout();
+    private final HorizontalLayout namespaceLayout = new HorizontalLayout();
+    private final ComboBox<String> namespaceCombo = new ComboBox<>();
 
-    public MainLayout(ClusterContext clusterContext, UserService userService) {
+    private Cluster lastLoadedCluster = null;
+    private String currentPath = "";
+    private boolean suppressNavigation = false;
+
+    public MainLayout(ClusterContext clusterContext, UserService userService, NamespaceService namespaceService) {
         this.clusterContext = clusterContext;
+        this.namespaceService = namespaceService;
         getElement().setAttribute("theme", Lumo.DARK);
         setPrimarySection(Section.DRAWER);
-        addToNavbar(buildNavbar());
-        addToDrawer(buildDrawer());
 
         clusterInfoLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         clusterInfoLayout.setSpacing(true);
         clusterInfoLayout.setPadding(false);
+
+        buildNamespaceLayout();
+
+        addToNavbar(buildNavbar());
+        addToDrawer(buildDrawer());
 
         if (clusterContext.getCluster() == null) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -49,7 +67,9 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
+        currentPath = event.getLocation().getPath();
         updateClusterInfo();
+        updateNamespaceSelector();
     }
 
     public void updateClusterInfo() {
@@ -75,6 +95,44 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         }
     }
 
+    private void updateNamespaceSelector() {
+        Cluster cluster = clusterContext.getCluster();
+        namespaceLayout.setVisible(cluster != null);
+
+        if (cluster == null) {
+            lastLoadedCluster = null;
+            return;
+        }
+
+        if (!cluster.equals(lastLoadedCluster)) {
+            loadNamespacesForCluster(cluster);
+        }
+    }
+
+    private void loadNamespacesForCluster(Cluster cluster) {
+        try {
+            List<String> names = namespaceService.listNamespaceNames(cluster);
+
+            String preferred = names.contains("default")
+                    ? "default"
+                    : names.isEmpty() ? null : names.get(0);
+
+            suppressNavigation = true;
+            namespaceCombo.setItems(names);
+            if (preferred != null) {
+                namespaceCombo.setValue(preferred);
+                clusterContext.setNamespace(preferred);
+            }
+            suppressNavigation = false;
+
+            lastLoadedCluster = cluster;
+        } catch (KubernetesOperationException e) {
+            Notification notification = Notification.show(
+                    "Erro ao carregar namespaces: " + e.getMessage(), 4000, Notification.Position.BOTTOM_END);
+            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+        }
+    }
+
     private void applyStatusTheme(Span badge, ConnectionStatus status) {
         switch (status) {
             case CONNECTED    -> badge.getElement().getThemeList().add("success");
@@ -82,6 +140,27 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             case DISCONNECTED -> badge.getElement().getThemeList().add("contrast");
             default           -> {}
         }
+    }
+
+    private void buildNamespaceLayout() {
+        Span label = new Span("Namespace:");
+        label.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY);
+
+        namespaceCombo.setPlaceholder("Selecionar...");
+        namespaceCombo.setWidth("180px");
+        namespaceCombo.getElement().getThemeList().add("small");
+        namespaceCombo.addValueChangeListener(e -> {
+            if (e.getValue() != null && !suppressNavigation) {
+                clusterContext.setNamespace(e.getValue());
+                UI.getCurrent().navigate(currentPath);
+            }
+        });
+
+        namespaceLayout.add(label, namespaceCombo);
+        namespaceLayout.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        namespaceLayout.setSpacing(true);
+        namespaceLayout.setPadding(false);
+        namespaceLayout.setVisible(false);
     }
 
     private HorizontalLayout buildNavbar() {
@@ -96,7 +175,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         logout.getElement().setAttribute("title", "Logout");
 
-        HorizontalLayout navbar = new HorizontalLayout(toggle, spacer, clusterInfoLayout, logout);
+        HorizontalLayout navbar = new HorizontalLayout(toggle, namespaceLayout, spacer, clusterInfoLayout, logout);
         navbar.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
         navbar.expand(spacer);
         navbar.setWidthFull();
@@ -158,11 +237,17 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         nav.setWidthFull();
         nav.addItem(
                 new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create()),
-                new SideNavItem("Workloads", WorkloadsView.class, VaadinIcon.CUBES.create()),
-                disabledNavItem("Namespaces", VaadinIcon.FOLDER_O),
-                disabledNavItem("Deploys", VaadinIcon.ROCKET)
+                buildWorkloadsNavItem(),
+                disabledNavItem("Topologia", VaadinIcon.CLUSTER)
         );
         return nav;
+    }
+
+    private SideNavItem buildWorkloadsNavItem() {
+        SideNavItem workloads = new SideNavItem("Workloads", PodsView.class, VaadinIcon.CUBES.create());
+        workloads.addItem(new SideNavItem("Pods", PodsView.class, VaadinIcon.CUBE.create()));
+        workloads.addItem(new SideNavItem("Deployments", DeploymentsView.class, VaadinIcon.ROCKET.create()));
+        return workloads;
     }
 
     private SideNav buildObservabilidadeNav() {
