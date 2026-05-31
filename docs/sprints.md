@@ -62,6 +62,7 @@
 - [x] Sidebar com 3 seções: VISÃO GERAL, OBSERVABILIDADE, CONFIGURAÇÃO
 - [x] Itens futuros visíveis e acinzentados (desabilitados via `pointer-events: none`)
 - [x] `SecurityConfig` liberando `/greencap.png` para acesso público
+- [x] Ação de remover cluster com dialog de confirmação (`ClusterService.deleteCluster()`)
 
 ### Sprint 6 — Logs em Tempo Real
 - [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`
