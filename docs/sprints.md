@@ -13,7 +13,7 @@
 | 3 | Visualização de Workloads | ✅ Concluído |
 | 4 | Estabilização + Ambiente Local | ✅ Concluído |
 | 5 | Redesign de Layout + UX | ✅ Concluído |
-| 6 | Login, Logout + UX de autenticação | 🔄 Em andamento |
+| 6 | Login, Logout + UX de autenticação | ✅ Concluído |
 | 7 | Logs em Tempo Real (WebSocket) | 🔲 Pendente |
 | 8 | RBAC + Polimento + Docker final | 🔲 Pendente |
 | — | Deploy Simplificado | ⏸ Adiado indefinidamente |
@@ -58,17 +58,14 @@
 - `SecurityConfig` liberando `/greencap.png` para acesso público
 - Ação de remover cluster com dialog de confirmação (`ClusterService.deleteCluster()`)
 
+### Sprint 6 — Login, Logout + UX de autenticação
+- Dark theme aplicado na `LoginView`
+- Logo `greencap.png` centralizada acima do formulário (140px)
+- Logout via invalidação da sessão HTTP (`WrappedSession.invalidate()`) — sem GET para `/logout`
+
 ---
 
 ## Backlog
-
-### Sprint 6 — Login, Logout + UX de autenticação 🔄
-
-> Foco: redesign das telas de login e logout alinhado ao dark theme da Sprint 5.
-
-- [x] Dark theme aplicado na `LoginView`
-- [x] Logo `greencap.png` centralizada acima do formulário (140px)
-- [x] Logout via invalidação da sessão HTTP (`WrappedSession.invalidate()`) — sem GET para `/logout`
 
 ### Sprint 7 — Logs em Tempo Real
 - [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`
