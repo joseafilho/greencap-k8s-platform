@@ -66,6 +66,10 @@
 
 > Foco: redesign das telas de login e logout alinhado ao dark theme da Sprint 5.
 
+- [x] Dark theme aplicado na `LoginView`
+- [x] Logo `greencap.png` centralizada acima do formulário (140px)
+- [x] Logout via invalidação da sessão HTTP (`WrappedSession.invalidate()`) — sem GET para `/logout`
+
 ### Sprint 7 — Logs em Tempo Real
 - [ ] `LogStreamService`: stream de logs de pod via Fabric8 `watchLog()`
 - [ ] WebSocket (STOMP) para push dos logs para o browser

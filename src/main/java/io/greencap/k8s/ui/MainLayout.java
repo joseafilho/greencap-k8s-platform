@@ -2,6 +2,7 @@ package io.greencap.k8s.ui;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -48,8 +49,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
         Div spacer = new Div();
 
-        Button logout = new Button(VaadinIcon.SIGN_OUT.create(),
-                e -> UI.getCurrent().getPage().setLocation("logout"));
+        Button logout = new Button(VaadinIcon.SIGN_OUT.create(), e -> {
+            VaadinSession.getCurrent().getSession().invalidate();
+            UI.getCurrent().getPage().executeJs("window.location.href='/login'");
+        });
         logout.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         logout.getElement().setAttribute("title", "Logout");
 
