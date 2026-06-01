@@ -68,6 +68,10 @@ _Avoid_: Rede, network, LoadBalancer
 UI section grouping application-level parameter resources injected into Workloads within a Namespace. Currently contains ConfigMaps and Secrets. The name reflects that these resources configure applications, not the GreenCap platform itself. Inspired by AWS Parameter Store / Secrets Manager grouping.
 _Avoid_: Configuração, Config, Settings
 
+**Event**:
+A Kubernetes-native occurrence record emitted by the control plane or controllers when something happens to a resource. Has a `type` (always `Normal` or `Warning` — the only two values defined by the Kubernetes API spec), a `reason` (machine-readable cause), a `message` (human-readable description), an `involvedObject` (the resource that triggered it), and a `count` (how many times it repeated). In GreenCap, displayed read-only under the Observability section, scoped to the active Namespace.
+_Avoid_: Log, alert, notification
+
 **Topologia**:
 Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
 _Avoid_: Diagram, map, graph

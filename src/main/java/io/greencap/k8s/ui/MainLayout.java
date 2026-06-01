@@ -113,9 +113,15 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         try {
             List<String> names = namespaceService.listNamespaceNames(cluster);
 
-            String preferred = names.contains("default")
-                    ? "default"
-                    : names.isEmpty() ? null : names.get(0);
+            String current = clusterContext.getNamespace();
+            String preferred;
+            if (current != null && names.contains(current)) {
+                preferred = current;
+            } else if (names.contains("default")) {
+                preferred = "default";
+            } else {
+                preferred = names.isEmpty() ? null : names.get(0);
+            }
 
             suppressNavigation = true;
             namespaceCombo.setItems(names);
@@ -269,7 +275,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         SideNav nav = new SideNav();
         nav.setWidthFull();
         nav.addItem(
-                disabledNavItem("Logs", VaadinIcon.LIST),
+                new SideNavItem("Events", EventsView.class, VaadinIcon.RECORDS.create()),
                 disabledNavItem("Metrics", VaadinIcon.CHART)
         );
         return nav;

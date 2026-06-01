@@ -19,6 +19,7 @@
 | 9 | Rede, Configuração e Demo | ✅ Concluído |
 | 10 | UI Language Standardization | ✅ Concluído |
 | 11 | UI Polish — ícones e navegação | ✅ Concluído |
+| 12 | Observabilidade: Events | ✅ Concluído |
 
 ---
 
@@ -93,8 +94,6 @@
 - Ao trocar cluster: namespace zera, lista recarrega, seleciona `default` (ou primeiro disponível)
 - Trocar namespace na navbar re-navega para a view ativa, disparando `beforeEnter` e recarregando dados
 
----
-
 ### Sprint 9 — Rede, Configuração e Demo (em andamento)
 
 - `samples/greencap-demo/` — aplicação 3-tier demo (nginx + httpbin + redis) com manifests Kubernetes cobrindo: Namespace, Deployments, Services (ClusterIP e NodePort), ConfigMap, Secret (Opaque), PVC e HPA
@@ -118,6 +117,16 @@
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
 
+### Sprint 12 — Observabilidade: Events
+
+- `EventInfo` record DTO com campos: type, reason, involvedObject, message, count, age
+- `ObservabilityService.listEvents()`: lista eventos via `client.v1().events()` (core/v1), ordenados por `lastTimestamp` decrescente
+- `EventsView` (`/observability/events`): grid com colunas redimensionáveis, badge Normal=verde/Warning=vermelho, Message com word-wrap
+- Menu OBSERVABILITY: item "Logs" renomeado e ativado como "Events"
+- `CONTEXT.md` atualizado: termo `Event` adicionado ao glossário
+- Fix: namespace não resetava para "default" no F5 — `MainLayout` agora preserva o namespace do `ClusterContext` se ainda válido
+- Validado manualmente com namespace `greencap-demo`
+
 ### Sprint 11 — UI Polish — ícones e navegação
 
 - Ícones de ação (testar conexão e remover) em `ClustersView` aumentados: `LUMO_ICON` + ícone SVG em `28px`
@@ -129,28 +138,12 @@
 
 ## Backlog
 
-### Sprint 7 — Cluster Atual por Sessão (Concluída)
-
-Movida para **Sprints Concluídas**.
-
 ### RBAC + Polimento + Docker Final
 - [ ] Controle de acesso por role (`ADMIN`, `OPERATOR`, `VIEWER`) com `@Secured` nas views
 - [ ] `UserManagementView` (apenas ADMIN): criar/desativar usuários
 - [ ] Página de erro customizada no Vaadin
 - [ ] `Dockerfile` + `docker-compose` validados ponta a ponta
 - [ ] Variável `GREENCAP_ENCRYPTION_KEY` obrigatória em produção (validação no startup)
-
----
-
-## Demandas Identificadas
-
-| # | Tipo | Descrição | Status |
-|---|------|-----------|--------|
-| 1 | 🐛 Bug | Filtro de upload no dialog de cluster não aceitava arquivos sem extensão | ✅ Corrigido |
-| 2 | 🐛 Bug | Hash BCrypt hardcoded na migration V1 era inválido | ✅ Corrigido via `DataInitializer` |
-| 3 | 💡 Melhoria | Kubeconfig com certs por caminho falha fora da máquina local — `KubeconfigValidator` detecta e bloqueia com instrução de correção | ✅ Corrigido |
-| 4 | 💡 Melhoria | Testes unitários: `UserService`, `ClusterService`, `WorkloadService` | 🔲 Sprint 6 |
-| 5 | 💡 Melhoria | `DashboardView` ainda é placeholder — adicionar cards com resumo dos clusters | ✅ Corrigido |
 
 ---
 
