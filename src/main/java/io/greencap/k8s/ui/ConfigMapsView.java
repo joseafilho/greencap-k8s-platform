@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -44,7 +45,7 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
         noClusterMessage = buildNoClusterMessage();
         buildConfigMapGrid();
 
-        add(noClusterMessage, configMapGrid);
+        add(new H3("ConfigMaps"), noClusterMessage, configMapGrid);
     }
 
     @Override

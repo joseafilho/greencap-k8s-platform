@@ -16,7 +16,7 @@
 | 6 | Login, Logout + UX de autenticação | ✅ Concluído |
 | 7 | Cluster Atual por Sessão | ✅ Concluído |
 | 8 | Refinamento de Navegação + Workloads | ✅ Concluído |
-| 9 | Rede, Configuração e Demo | 🔲 Em andamento |
+| 9 | Rede, Configuração e Demo | ✅ Concluído |
 
 ---
 
@@ -99,7 +99,12 @@
 - `create.sh` — habilita `metrics-server` via minikube addon e aplica todos os manifests em ordem; aguarda rollout dos Deployments
 - `delete.sh` — remove o namespace `greencap-demo` e todos os recursos filhos
 - `CONTEXT.md` — novos termos: `Service`, `ConfigMap`, `Secret`, `Rede`, `Configuração`, `Topologia` (futuro — grafo animado de objetos do namespace e suas relações)
-- Issues pendentes: sidebar Rede/Configuração, `ServicesView`, `ConfigMapsView`, `SecretsView`
+- Sidebar: grupos colapsáveis Rede (Services) e Configuração (ConfigMaps, Secrets) adicionados ao `MainLayout`
+- `ServicesView` (`/networking/services`): grid com nome, tipo (badge), clusterIP, portas, namespace, idade
+- `ConfigMapsView` (`/config/configmaps`): grid com nome, contagem de keys, namespace, idade — valores nunca expostos
+- `SecretsView` (`/config/secrets`): grid com nome, tipo (badge), contagem de keys, namespace, idade — valores nunca decodificados
+- `H3` de título adicionado em todas as views (Pods, Deployments, Services, ConfigMaps, Secrets)
+- Validado manualmente com cluster minikube e namespace `greencap-demo`
 
 ## Backlog
 

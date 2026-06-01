@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -44,7 +45,7 @@ public class DeploymentsView extends VerticalLayout implements BeforeEnterObserv
         noClusterMessage = buildNoClusterMessage();
         buildDeployGrid();
 
-        add(noClusterMessage, deployGrid);
+        add(new H3("Deployments"), noClusterMessage, deployGrid);
     }
 
     @Override

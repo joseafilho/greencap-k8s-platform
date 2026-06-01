@@ -1,6 +1,6 @@
 # 05 — SecretsView
 
-Status: todo
+Status: done
 
 ## Contexto
 
