@@ -44,7 +44,7 @@ public class WorkloadService {
                     .toList();
         } catch (Exception e) {
             log.error("Failed to list pods for cluster {}: {}", cluster.getName(), e.getMessage());
-            throw new KubernetesOperationException("Erro ao listar pods: " + e.getMessage(), e);
+            throw new KubernetesOperationException("Failed to list pods: " + e.getMessage(), e);
         }
     }
 
@@ -67,7 +67,7 @@ public class WorkloadService {
                     .toList();
         } catch (Exception e) {
             log.error("Failed to list deployments for cluster {}: {}", cluster.getName(), e.getMessage());
-            throw new KubernetesOperationException("Erro ao listar deployments: " + e.getMessage(), e);
+            throw new KubernetesOperationException("Failed to list deployments: " + e.getMessage(), e);
         }
     }
 

@@ -24,10 +24,10 @@ public class KubeconfigValidator {
             }
             if (hasPathReferences(parsed)) {
                 return Optional.of(
-                        "Este kubeconfig referencia certificados por caminho de arquivo local, " +
-                        "o que não funciona no servidor. Gere uma versão portável com:\n\n" +
+                        "This kubeconfig references certificates by local file path, " +
+                        "which does not work on the server. Generate a portable version with:\n\n" +
                         "kubectl config view --flatten --minify\n\n" +
-                        "e faça o upload do resultado."
+                        "and upload the result."
                 );
             }
             return Optional.empty();

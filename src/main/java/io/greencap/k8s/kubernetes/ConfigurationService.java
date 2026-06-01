@@ -37,7 +37,7 @@ public class ConfigurationService {
                     .toList();
         } catch (Exception e) {
             log.error("Failed to list configmaps for cluster {}: {}", cluster.getName(), e.getMessage());
-            throw new KubernetesOperationException("Erro ao listar configmaps: " + e.getMessage(), e);
+            throw new KubernetesOperationException("Failed to list configmaps: " + e.getMessage(), e);
         }
     }
 
@@ -59,7 +59,7 @@ public class ConfigurationService {
                     .toList();
         } catch (Exception e) {
             log.error("Failed to list secrets for cluster {}: {}", cluster.getName(), e.getMessage());
-            throw new KubernetesOperationException("Erro ao listar secrets: " + e.getMessage(), e);
+            throw new KubernetesOperationException("Failed to list secrets: " + e.getMessage(), e);
         }
     }
 

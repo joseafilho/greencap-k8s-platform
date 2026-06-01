@@ -42,7 +42,7 @@ public class NetworkingService {
                     .toList();
         } catch (Exception e) {
             log.error("Failed to list services for cluster {}: {}", cluster.getName(), e.getMessage());
-            throw new KubernetesOperationException("Erro ao listar services: " + e.getMessage(), e);
+            throw new KubernetesOperationException("Failed to list services: " + e.getMessage(), e);
         }
     }
 

@@ -1,6 +1,6 @@
 # 06 — Traduzir mensagens de exceção e validação
 
-Status: todo
+Status: done
 
 ## Contexto
 
