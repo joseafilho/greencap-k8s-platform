@@ -18,6 +18,7 @@
 | 8 | Refinamento de Navegação + Workloads | ✅ Concluído |
 | 9 | Rede, Configuração e Demo | ✅ Concluído |
 | 10 | UI Language Standardization | ✅ Concluído |
+| 11 | UI Polish — ícones e navegação | ✅ Concluído |
 
 ---
 
@@ -107,7 +108,7 @@
 - `H3` de título adicionado em todas as views (Pods, Deployments, Services, ConfigMaps, Secrets)
 - Validado manualmente com cluster minikube e namespace `greencap-demo`
 
-### Sprint 10 — UI Language Standardization (em andamento)
+### Sprint 10 — UI Language Standardization
 
 - Padronização de todo texto visível ao usuário para inglês: labels, botões, mensagens, notificações e exceções
 - `buildNoClusterMessage()` extraído para `UiConstants` — eliminando duplicação em 5 views
@@ -116,6 +117,15 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 11 — UI Polish — ícones e navegação
+
+- Ícones de ação (testar conexão e remover) em `ClustersView` aumentados: `LUMO_ICON` + ícone SVG em `28px`
+- Seção "OVERVIEW" do menu lateral renomeada para "PROJECT"
+- Duração das notificações aumentada de 4s para 6s (`UiConstants.NOTIFICATION_DURATION_MS`)
+- Mensagem de teste de conexão corrigida: "Connection to X successful" (era "OK")
+- Issue de identidade visual (paleta de cores GreenCap) descartada nesta sprint — requer avaliação da abordagem de theming sem dependência de Node.js/Vite
+- Validado manualmente pelo usuário
 
 ## Backlog
 

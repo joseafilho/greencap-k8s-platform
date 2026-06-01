@@ -12,7 +12,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 final class UiConstants {
 
-    static final int NOTIFICATION_DURATION_MS = 4000;
+    static final int NOTIFICATION_DURATION_MS = 6000;
 
     static VerticalLayout buildNoClusterMessage() {
         Span text = new Span("No active cluster. Select a cluster in Settings → Clusters.");

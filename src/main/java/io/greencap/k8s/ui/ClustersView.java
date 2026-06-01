@@ -81,7 +81,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         grid.addColumn(c -> c.getProvider().name()).setHeader("Provider").setWidth("120px");
         grid.addComponentColumn(c -> statusBadge(c.getConnectionStatus()))
                 .setHeader("Status").setWidth("140px");
-        grid.addComponentColumn(this::buildActions).setHeader("Actions").setWidth("140px");
+        grid.addComponentColumn(this::buildActions).setHeader("Actions").setWidth("120px");
         grid.setSizeFull();
         return grid;
     }
@@ -138,12 +138,16 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private HorizontalLayout buildActions(Cluster cluster) {
-        Button testBtn = new Button(VaadinIcon.CONNECT.create(), e -> testConnection(cluster));
-        testBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+        var testIcon = VaadinIcon.CONNECT.create();
+        testIcon.setSize("28px");
+        Button testBtn = new Button(testIcon, e -> testConnection(cluster));
+        testBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
         testBtn.getElement().setAttribute("title", "Test connection");
 
-        Button deleteBtn = new Button(VaadinIcon.TRASH.create(), e -> confirmDelete(cluster));
-        deleteBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
+        var deleteIcon = VaadinIcon.TRASH.create();
+        deleteIcon.setSize("28px");
+        Button deleteBtn = new Button(deleteIcon, e -> confirmDelete(cluster));
+        deleteBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON, ButtonVariant.LUMO_ERROR);
         deleteBtn.getElement().setAttribute("title", "Remove cluster");
 
         return new HorizontalLayout(testBtn, deleteBtn);
@@ -185,7 +189,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         }
         refreshGrid();
         if (status == ConnectionStatus.CONNECTED) {
-            notify("Connection to " + cluster.getName() + " OK", NotificationVariant.LUMO_SUCCESS);
+            notify("Connection to " + cluster.getName() + " successful", NotificationVariant.LUMO_SUCCESS);
         } else {
             notify("Failed to connect to " + cluster.getName(), NotificationVariant.LUMO_ERROR);
         }

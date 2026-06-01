@@ -190,7 +190,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         drawer.setSpacing(false);
 
         drawer.add(buildLogoSection());
-        drawer.add(buildNavSection("OVERVIEW", buildVisaoGeralNav()));
+        drawer.add(buildNavSection("PROJECT", buildVisaoGeralNav()));
         drawer.add(buildNavSection("OBSERVABILITY", buildObservabilidadeNav()));
         drawer.add(buildNavSection("SETTINGS", buildConfiguracaoNav()));
 
