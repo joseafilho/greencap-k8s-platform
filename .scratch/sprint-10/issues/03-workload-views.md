@@ -1,6 +1,6 @@
 # 03 — Traduzir PodsView e DeploymentsView
 
-Status: todo
+Status: done
 
 ## O que fazer
 

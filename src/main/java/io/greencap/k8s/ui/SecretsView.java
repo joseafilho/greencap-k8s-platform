@@ -54,11 +54,11 @@ public class SecretsView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private void buildSecretGrid() {
-        secretGrid.addColumn(SecretInfo::name).setHeader("Nome").setSortable(true).setFlexGrow(2);
-        secretGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Tipo").setFlexGrow(1);
+        secretGrid.addColumn(SecretInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
+        secretGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Type").setFlexGrow(1);
         secretGrid.addColumn(s -> s.keyCount() + " keys").setHeader("Keys").setWidth("100px");
         secretGrid.addColumn(SecretInfo::namespace).setHeader("Namespace").setSortable(true);
-        secretGrid.addColumn(SecretInfo::age).setHeader("Idade").setWidth("80px");
+        secretGrid.addColumn(SecretInfo::age).setHeader("Age").setWidth("80px");
         secretGrid.setSizeFull();
         secretGrid.setItems(Collections.emptyList());
         secretGrid.setVisible(false);

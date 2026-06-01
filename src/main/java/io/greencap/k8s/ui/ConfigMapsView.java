@@ -53,10 +53,10 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private void buildConfigMapGrid() {
-        configMapGrid.addColumn(ConfigMapInfo::name).setHeader("Nome").setSortable(true).setFlexGrow(2);
+        configMapGrid.addColumn(ConfigMapInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
         configMapGrid.addColumn(cm -> cm.keyCount() + " keys").setHeader("Keys").setWidth("100px");
         configMapGrid.addColumn(ConfigMapInfo::namespace).setHeader("Namespace").setSortable(true);
-        configMapGrid.addColumn(ConfigMapInfo::age).setHeader("Idade").setWidth("80px");
+        configMapGrid.addColumn(ConfigMapInfo::age).setHeader("Age").setWidth("80px");
         configMapGrid.setSizeFull();
         configMapGrid.setItems(Collections.emptyList());
         configMapGrid.setVisible(false);

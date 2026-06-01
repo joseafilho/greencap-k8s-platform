@@ -54,12 +54,12 @@ public class ServicesView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private void buildServiceGrid() {
-        serviceGrid.addColumn(ServiceInfo::name).setHeader("Nome").setSortable(true).setFlexGrow(2);
-        serviceGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Tipo").setWidth("140px");
+        serviceGrid.addColumn(ServiceInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
+        serviceGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Type").setWidth("140px");
         serviceGrid.addColumn(ServiceInfo::clusterIP).setHeader("Cluster IP").setWidth("140px");
-        serviceGrid.addColumn(ServiceInfo::ports).setHeader("Porta(s)").setFlexGrow(1);
+        serviceGrid.addColumn(ServiceInfo::ports).setHeader("Port(s)").setFlexGrow(1);
         serviceGrid.addColumn(ServiceInfo::namespace).setHeader("Namespace").setSortable(true);
-        serviceGrid.addColumn(ServiceInfo::age).setHeader("Idade").setWidth("80px");
+        serviceGrid.addColumn(ServiceInfo::age).setHeader("Age").setWidth("80px");
         serviceGrid.setSizeFull();
         serviceGrid.setItems(Collections.emptyList());
         serviceGrid.setVisible(false);

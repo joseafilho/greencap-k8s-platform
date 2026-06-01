@@ -54,12 +54,12 @@ public class DeploymentsView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void buildDeployGrid() {
-        deployGrid.addColumn(DeploymentInfo::name).setHeader("Nome").setSortable(true).setFlexGrow(2);
+        deployGrid.addColumn(DeploymentInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
         deployGrid.addColumn(DeploymentInfo::namespace).setHeader("Namespace").setSortable(true);
         deployGrid.addComponentColumn(d -> replicasBadge(d.ready(), d.desired()))
-                .setHeader("Réplicas").setWidth("100px");
-        deployGrid.addColumn(DeploymentInfo::available).setHeader("Disponíveis").setWidth("110px");
-        deployGrid.addColumn(DeploymentInfo::age).setHeader("Idade").setWidth("80px");
+                .setHeader("Replicas").setWidth("100px");
+        deployGrid.addColumn(DeploymentInfo::available).setHeader("Available").setWidth("110px");
+        deployGrid.addColumn(DeploymentInfo::age).setHeader("Age").setWidth("80px");
         deployGrid.setSizeFull();
         deployGrid.setItems(Collections.emptyList());
         deployGrid.setVisible(false);

@@ -1,6 +1,6 @@
 # 04 — Traduzir ServicesView, ConfigMapsView e SecretsView
 
-Status: todo
+Status: done
 
 ## O que fazer
 
