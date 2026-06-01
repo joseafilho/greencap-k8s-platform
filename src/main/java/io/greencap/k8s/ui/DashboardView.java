@@ -43,11 +43,11 @@ public class DashboardView extends VerticalLayout {
         row.setSpacing(true);
         row.setDefaultVerticalComponentAlignment(Alignment.STRETCH);
 
-        row.add(buildCard("Total", clusters.size(), null));
-        row.add(buildCard("Conectados",   countByStatus.getOrDefault(ConnectionStatus.CONNECTED,    0L).intValue(), "success"));
-        row.add(buildCard("Desconectados", countByStatus.getOrDefault(ConnectionStatus.DISCONNECTED, 0L).intValue(), "contrast"));
-        row.add(buildCard("Com erro",     countByStatus.getOrDefault(ConnectionStatus.ERROR,         0L).intValue(), "error"));
-        row.add(buildCard("Desconhecido", countByStatus.getOrDefault(ConnectionStatus.UNKNOWN,       0L).intValue(), null));
+        row.add(buildCard("Total",        clusters.size(), null));
+        row.add(buildCard("Connected",    countByStatus.getOrDefault(ConnectionStatus.CONNECTED,    0L).intValue(), "success"));
+        row.add(buildCard("Disconnected", countByStatus.getOrDefault(ConnectionStatus.DISCONNECTED, 0L).intValue(), "contrast"));
+        row.add(buildCard("Error",        countByStatus.getOrDefault(ConnectionStatus.ERROR,         0L).intValue(), "error"));
+        row.add(buildCard("Unknown",      countByStatus.getOrDefault(ConnectionStatus.UNKNOWN,       0L).intValue(), null));
 
         return row;
     }

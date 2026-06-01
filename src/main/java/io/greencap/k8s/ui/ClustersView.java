@@ -76,7 +76,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private Grid<Cluster> buildGrid() {
-        grid.addComponentColumn(this::buildRadioCell).setHeader("Active").setWidth("70px").setFlexGrow(0);
+        grid.addComponentColumn(this::buildRadioCell).setHeader("Active").setWidth("90px").setFlexGrow(0);
         grid.addColumn(Cluster::getName).setHeader("Name").setSortable(true).setFlexGrow(1);
         grid.addColumn(c -> c.getProvider().name()).setHeader("Provider").setWidth("120px");
         grid.addComponentColumn(c -> statusBadge(c.getConnectionStatus()))
