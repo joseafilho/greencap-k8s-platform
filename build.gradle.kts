@@ -77,6 +77,10 @@ tasks.named<BootJar>("bootJar") {
     dependsOn("vaadinBuildFrontend")
 }
 
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    systemProperty("vaadin.devmode.devTools.enabled", "false")
+}
+
 vaadin {
     productionMode = System.getenv("VAADIN_PRODUCTION") == "true"
 }

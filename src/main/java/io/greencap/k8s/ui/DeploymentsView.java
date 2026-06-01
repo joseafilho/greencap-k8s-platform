@@ -40,7 +40,7 @@ public class DeploymentsView extends VerticalLayout implements BeforeEnterObserv
         noClusterMessage = UiConstants.buildNoClusterMessage();
         buildDeployGrid();
 
-        add(new H3("Deployments"), noClusterMessage, deployGrid);
+        add(UiConstants.buildSectionHeader("Deployments", this::loadDeployments), noClusterMessage, deployGrid);
     }
 
     @Override
@@ -54,25 +54,28 @@ public class DeploymentsView extends VerticalLayout implements BeforeEnterObserv
     }
 
     private void buildDeployGrid() {
-        deployGrid.addColumn(DeploymentInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
-        deployGrid.addColumn(DeploymentInfo::namespace).setHeader("Namespace").setSortable(true);
+        deployGrid.addColumn(DeploymentInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        deployGrid.addColumn(DeploymentInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
         deployGrid.addComponentColumn(d -> replicasBadge(d.ready(), d.desired()))
-                .setHeader("Replicas").setWidth("100px");
-        deployGrid.addColumn(DeploymentInfo::available).setHeader("Available").setWidth("110px");
-        deployGrid.addColumn(DeploymentInfo::age).setHeader("Age").setWidth("80px");
+                .setHeader("Replicas").setWidth("100px").setResizable(true);
+        deployGrid.addColumn(DeploymentInfo::available).setHeader("Available").setWidth("110px").setResizable(true);
+        deployGrid.addColumn(DeploymentInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         deployGrid.setSizeFull();
         deployGrid.setItems(Collections.emptyList());
         deployGrid.setVisible(false);
     }
 
-    private void loadDeployments() {
+    private boolean loadDeployments() {
         Cluster cluster = clusterContext.getCluster();
+        if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
             deployGrid.setItems(workloadService.listDeployments(cluster, namespace));
+            return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             deployGrid.setItems(Collections.emptyList());
+            return false;
         }
     }
 

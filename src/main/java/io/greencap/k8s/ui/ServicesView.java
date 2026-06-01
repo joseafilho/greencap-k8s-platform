@@ -40,7 +40,7 @@ public class ServicesView extends VerticalLayout implements BeforeEnterObserver 
         noClusterMessage = UiConstants.buildNoClusterMessage();
         buildServiceGrid();
 
-        add(new H3("Services"), noClusterMessage, serviceGrid);
+        add(UiConstants.buildSectionHeader("Services", this::loadServices), noClusterMessage, serviceGrid);
     }
 
     @Override
@@ -54,25 +54,28 @@ public class ServicesView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private void buildServiceGrid() {
-        serviceGrid.addColumn(ServiceInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
-        serviceGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Type").setWidth("140px");
-        serviceGrid.addColumn(ServiceInfo::clusterIP).setHeader("Cluster IP").setWidth("140px");
-        serviceGrid.addColumn(ServiceInfo::ports).setHeader("Port(s)").setFlexGrow(1);
-        serviceGrid.addColumn(ServiceInfo::namespace).setHeader("Namespace").setSortable(true);
-        serviceGrid.addColumn(ServiceInfo::age).setHeader("Age").setWidth("80px");
+        serviceGrid.addColumn(ServiceInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        serviceGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Type").setWidth("140px").setResizable(true);
+        serviceGrid.addColumn(ServiceInfo::clusterIP).setHeader("Cluster IP").setWidth("140px").setResizable(true);
+        serviceGrid.addColumn(ServiceInfo::ports).setHeader("Port(s)").setFlexGrow(1).setResizable(true);
+        serviceGrid.addColumn(ServiceInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
+        serviceGrid.addColumn(ServiceInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         serviceGrid.setSizeFull();
         serviceGrid.setItems(Collections.emptyList());
         serviceGrid.setVisible(false);
     }
 
-    private void loadServices() {
+    private boolean loadServices() {
         Cluster cluster = clusterContext.getCluster();
+        if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
             serviceGrid.setItems(networkingService.listServices(cluster, namespace));
+            return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             serviceGrid.setItems(Collections.emptyList());
+            return false;
         }
     }
 

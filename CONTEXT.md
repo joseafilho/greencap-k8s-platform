@@ -68,6 +68,10 @@ _Avoid_: Rede, network, LoadBalancer
 UI section grouping application-level parameter resources injected into Workloads within a Namespace. Currently contains ConfigMaps and Secrets. The name reflects that these resources configure applications, not the GreenCap platform itself. Inspired by AWS Parameter Store / Secrets Manager grouping.
 _Avoid_: Configuração, Config, Settings
 
+**PodMetric**:
+A point-in-time resource usage sample for a Pod, collected by the metrics-server from the kubelet. Contains CPU usage (in millicores) and memory usage (in MiB) aggregated across all containers in the Pod. In GreenCap, displayed read-only under the Observability section as a top-pods listing, scoped to the active Namespace.
+_Avoid_: Stats, usage, telemetry
+
 **Event**:
 A Kubernetes-native occurrence record emitted by the control plane or controllers when something happens to a resource. Has a `type` (always `Normal` or `Warning` — the only two values defined by the Kubernetes API spec), a `reason` (machine-readable cause), a `message` (human-readable description), an `involvedObject` (the resource that triggered it), and a `count` (how many times it repeated). In GreenCap, displayed read-only under the Observability section, scoped to the active Namespace.
 _Avoid_: Log, alert, notification

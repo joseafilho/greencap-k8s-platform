@@ -276,7 +276,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         nav.setWidthFull();
         nav.addItem(
                 new SideNavItem("Events", EventsView.class, VaadinIcon.RECORDS.create()),
-                disabledNavItem("Metrics", VaadinIcon.CHART)
+                new SideNavItem("Metrics", MetricsView.class, VaadinIcon.CHART.create())
         );
         return nav;
     }

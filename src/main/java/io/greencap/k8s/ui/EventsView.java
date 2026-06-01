@@ -39,7 +39,7 @@ public class EventsView extends VerticalLayout implements BeforeEnterObserver {
         noClusterMessage = UiConstants.buildNoClusterMessage();
         buildEventGrid();
 
-        add(new H3("Events"), noClusterMessage, eventGrid);
+        add(UiConstants.buildSectionHeader("Events", this::loadEvents), noClusterMessage, eventGrid);
     }
 
     @Override
@@ -76,13 +76,16 @@ public class EventsView extends VerticalLayout implements BeforeEnterObserver {
         return span;
     }
 
-    private void loadEvents() {
+    private boolean loadEvents() {
+        if (clusterContext.getCluster() == null) return false;
         try {
             eventGrid.setItems(observabilityService.listEvents(
                     clusterContext.getCluster(), clusterContext.getNamespace()));
+            return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             eventGrid.setItems(Collections.emptyList());
+            return false;
         }
     }
 

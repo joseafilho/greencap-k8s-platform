@@ -20,6 +20,7 @@
 | 10 | UI Language Standardization | ✅ Concluído |
 | 11 | UI Polish — ícones e navegação | ✅ Concluído |
 | 12 | Observabilidade: Events | ✅ Concluído |
+| 13 | Observabilidade: Metrics + UX global | ✅ Concluído |
 
 ---
 
@@ -116,6 +117,20 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 13 — Observabilidade: Metrics + UX global
+
+- `PodMetricInfo` record DTO com campos: name, namespace, cpuMillicores, memoryMiB
+- `ObservabilityService.listPodMetrics()`: usa `client.top().pods().metrics(namespace)`, agrega containers por pod, ordena por CPU desc
+- `MetricsView` (`/observability/metrics`): grid com CPU (ex: "250m") e Memory (ex: "128Mi"), colunas sortáveis e redimensionáveis
+- Menu OBSERVABILITY: item "Metrics" ativado
+- `CONTEXT.md`: termo `PodMetric` adicionado ao glossário
+- UX global: colunas redimensionáveis em todas as views (Pods, Deployments, Services, ConfigMaps, Secrets, Clusters, Events, Metrics)
+- Botão de refresh no canto superior direito de todas as listagens via `UiConstants.buildSectionHeader()`
+- Notificação "Data updated" apenas em refresh bem-sucedido (`BooleanSupplier`)
+- `UiConstants.ICON_SIZE = "28px"` — constante centralizada usada em todos os ícones de ação
+- Vaadin Copilot desabilitado em dev via JVM system property no `bootRun`
+- Validado manualmente com namespace `greencap-demo`
 
 ### Sprint 12 — Observabilidade: Events
 

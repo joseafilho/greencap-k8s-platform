@@ -40,7 +40,7 @@ public class SecretsView extends VerticalLayout implements BeforeEnterObserver {
         noClusterMessage = UiConstants.buildNoClusterMessage();
         buildSecretGrid();
 
-        add(new H3("Secrets"), noClusterMessage, secretGrid);
+        add(UiConstants.buildSectionHeader("Secrets", this::loadSecrets), noClusterMessage, secretGrid);
     }
 
     @Override
@@ -54,24 +54,27 @@ public class SecretsView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private void buildSecretGrid() {
-        secretGrid.addColumn(SecretInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
-        secretGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Type").setFlexGrow(1);
-        secretGrid.addColumn(s -> s.keyCount() + " keys").setHeader("Keys").setWidth("100px");
-        secretGrid.addColumn(SecretInfo::namespace).setHeader("Namespace").setSortable(true);
-        secretGrid.addColumn(SecretInfo::age).setHeader("Age").setWidth("80px");
+        secretGrid.addColumn(SecretInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        secretGrid.addComponentColumn(s -> typeBadge(s.type())).setHeader("Type").setFlexGrow(1).setResizable(true);
+        secretGrid.addColumn(s -> s.keyCount() + " keys").setHeader("Keys").setWidth("100px").setResizable(true);
+        secretGrid.addColumn(SecretInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
+        secretGrid.addColumn(SecretInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         secretGrid.setSizeFull();
         secretGrid.setItems(Collections.emptyList());
         secretGrid.setVisible(false);
     }
 
-    private void loadSecrets() {
+    private boolean loadSecrets() {
         Cluster cluster = clusterContext.getCluster();
+        if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
             secretGrid.setItems(configurationService.listSecrets(cluster, namespace));
+            return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             secretGrid.setItems(Collections.emptyList());
+            return false;
         }
     }
 

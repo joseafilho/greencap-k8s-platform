@@ -39,7 +39,7 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
         noClusterMessage = UiConstants.buildNoClusterMessage();
         buildConfigMapGrid();
 
-        add(new H3("ConfigMaps"), noClusterMessage, configMapGrid);
+        add(UiConstants.buildSectionHeader("ConfigMaps", this::loadConfigMaps), noClusterMessage, configMapGrid);
     }
 
     @Override
@@ -53,23 +53,26 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private void buildConfigMapGrid() {
-        configMapGrid.addColumn(ConfigMapInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
-        configMapGrid.addColumn(cm -> cm.keyCount() + " keys").setHeader("Keys").setWidth("100px");
-        configMapGrid.addColumn(ConfigMapInfo::namespace).setHeader("Namespace").setSortable(true);
-        configMapGrid.addColumn(ConfigMapInfo::age).setHeader("Age").setWidth("80px");
+        configMapGrid.addColumn(ConfigMapInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        configMapGrid.addColumn(cm -> cm.keyCount() + " keys").setHeader("Keys").setWidth("100px").setResizable(true);
+        configMapGrid.addColumn(ConfigMapInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
+        configMapGrid.addColumn(ConfigMapInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         configMapGrid.setSizeFull();
         configMapGrid.setItems(Collections.emptyList());
         configMapGrid.setVisible(false);
     }
 
-    private void loadConfigMaps() {
+    private boolean loadConfigMaps() {
         Cluster cluster = clusterContext.getCluster();
+        if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
             configMapGrid.setItems(configurationService.listConfigMaps(cluster, namespace));
+            return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             configMapGrid.setItems(Collections.emptyList());
+            return false;
         }
     }
 

@@ -40,7 +40,7 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
         noClusterMessage = UiConstants.buildNoClusterMessage();
         buildPodGrid();
 
-        add(new H3("Pods"), noClusterMessage, podGrid);
+        add(UiConstants.buildSectionHeader("Pods", this::loadPods), noClusterMessage, podGrid);
     }
 
     @Override
@@ -54,25 +54,28 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private void buildPodGrid() {
-        podGrid.addColumn(PodInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2);
-        podGrid.addColumn(PodInfo::namespace).setHeader("Namespace").setSortable(true);
-        podGrid.addComponentColumn(p -> phaseBadge(p.phase())).setHeader("Status").setWidth("120px");
-        podGrid.addColumn(PodInfo::node).setHeader("Node").setFlexGrow(1);
-        podGrid.addColumn(PodInfo::restarts).setHeader("Restarts").setWidth("90px");
-        podGrid.addColumn(PodInfo::age).setHeader("Age").setWidth("80px");
+        podGrid.addColumn(PodInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        podGrid.addColumn(PodInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
+        podGrid.addComponentColumn(p -> phaseBadge(p.phase())).setHeader("Status").setWidth("120px").setResizable(true);
+        podGrid.addColumn(PodInfo::node).setHeader("Node").setFlexGrow(1).setResizable(true);
+        podGrid.addColumn(PodInfo::restarts).setHeader("Restarts").setWidth("90px").setResizable(true);
+        podGrid.addColumn(PodInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         podGrid.setSizeFull();
         podGrid.setItems(Collections.emptyList());
         podGrid.setVisible(false);
     }
 
-    private void loadPods() {
+    private boolean loadPods() {
         Cluster cluster = clusterContext.getCluster();
+        if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
             podGrid.setItems(workloadService.listPods(cluster, namespace));
+            return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
             podGrid.setItems(Collections.emptyList());
+            return false;
         }
     }
 
