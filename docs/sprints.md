@@ -17,7 +17,7 @@
 | 7 | Cluster Atual por Sessão | ✅ Concluído |
 | 8 | Refinamento de Navegação + Workloads | ✅ Concluído |
 | 9 | Rede, Configuração e Demo | ✅ Concluído |
-| 10 | UI Language Standardization | 🔲 Em andamento |
+| 10 | UI Language Standardization | ✅ Concluído |
 
 ---
 
@@ -114,6 +114,8 @@
 - Sidebar renomeado: OVERVIEW / OBSERVABILITY / SETTINGS + menu "Parameters" (era "Configuração")
 - `CONTEXT.md` atualizado: `Networking` e `Parameters` como termos canônicos (substituindo `Rede` e `Configuração`)
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
+- Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
+- Validado manualmente com cluster minikube e namespace greencap-demo
 
 ## Backlog
 
