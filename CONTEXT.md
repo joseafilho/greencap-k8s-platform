@@ -53,20 +53,20 @@ A Kubernetes network resource that exposes a set of Pods under a stable IP and p
 _Avoid_: LoadBalancer (as a synonym for all Service types), endpoint, proxy
 
 **ConfigMap**:
-Key-value configuration data stored unencrypted in the cluster and injected into Workloads as environment variables or mounted files. In GreenCap, displayed read-only under the Configuração section — only metadata and key names are shown, not values.
+Key-value configuration data stored unencrypted in the cluster and injected into Workloads as environment variables or mounted files. In GreenCap, displayed read-only under the Parameters section — only metadata and key count are shown, not values.
 _Avoid_: Config, settings, properties
 
 **Secret**:
 Sensitive key-value data (credentials, tokens, certificates) stored in the cluster. In GreenCap, only metadata is displayed (name, type, key count) — values are never decoded or shown.
 _Avoid_: Kubeconfig (a Kubeconfig is a GreenCap concept; Secret is a Kubernetes object)
 
-**Rede**:
+**Networking**:
 UI section grouping network-related Kubernetes resources visible in GreenCap. Currently contains Services. Inspired by AWS Networking grouping. Future: Ingress.
-_Avoid_: Networking, network, LoadBalancer
+_Avoid_: Rede, network, LoadBalancer
 
-**Configuração**:
-UI section grouping configuration Kubernetes resources visible in GreenCap. Currently contains ConfigMaps and Secrets. Inspired by AWS Parameter Store / Secrets Manager grouping. Future: additional config types.
-_Avoid_: Config, settings
+**Parameters**:
+UI section grouping application-level parameter resources injected into Workloads within a Namespace. Currently contains ConfigMaps and Secrets. The name reflects that these resources configure applications, not the GreenCap platform itself. Inspired by AWS Parameter Store / Secrets Manager grouping.
+_Avoid_: Configuração, Config, Settings
 
 **Topologia**:
 Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
