@@ -1,6 +1,6 @@
 # 02 — Traduzir MainLayout: sidebar e navbar
 
-Status: todo
+Status: done
 
 ## Contexto
 

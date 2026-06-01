@@ -89,7 +89,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
             clusterInfoLayout.add(label, name, badge);
         } else {
-            Span noCluster = new Span("Nenhum cluster ativo");
+            Span noCluster = new Span("No active cluster");
             noCluster.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.SMALL);
             clusterInfoLayout.add(noCluster);
         }
@@ -128,7 +128,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
             lastLoadedCluster = cluster;
         } catch (KubernetesOperationException e) {
             Notification notification = Notification.show(
-                    "Erro ao carregar namespaces: " + e.getMessage(), UiConstants.NOTIFICATION_DURATION_MS, Notification.Position.BOTTOM_END);
+                    "Failed to load namespaces: " + e.getMessage(), UiConstants.NOTIFICATION_DURATION_MS, Notification.Position.BOTTOM_END);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
@@ -146,7 +146,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         Span label = new Span("Namespace:");
         label.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.TextColor.SECONDARY);
 
-        namespaceCombo.setPlaceholder("Selecionar...");
+        namespaceCombo.setPlaceholder("Select...");
         namespaceCombo.setWidth("180px");
         namespaceCombo.getElement().getThemeList().add("small");
         namespaceCombo.addValueChangeListener(e -> {
@@ -190,9 +190,9 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         drawer.setSpacing(false);
 
         drawer.add(buildLogoSection());
-        drawer.add(buildNavSection("VISÃO GERAL", buildVisaoGeralNav()));
-        drawer.add(buildNavSection("OBSERVABILIDADE", buildObservabilidadeNav()));
-        drawer.add(buildNavSection("CONFIGURAÇÃO", buildConfiguracaoNav()));
+        drawer.add(buildNavSection("OVERVIEW", buildVisaoGeralNav()));
+        drawer.add(buildNavSection("OBSERVABILITY", buildObservabilidadeNav()));
+        drawer.add(buildNavSection("SETTINGS", buildConfiguracaoNav()));
 
         return drawer;
     }
@@ -253,16 +253,16 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     }
 
     private SideNavItem buildRedeNavItem() {
-        SideNavItem rede = new SideNavItem("Rede", ServicesView.class, VaadinIcon.CONNECT.create());
-        rede.addItem(new SideNavItem("Services", ServicesView.class, VaadinIcon.SHARE.create()));
-        return rede;
+        SideNavItem networking = new SideNavItem("Networking", ServicesView.class, VaadinIcon.CONNECT.create());
+        networking.addItem(new SideNavItem("Services", ServicesView.class, VaadinIcon.SHARE.create()));
+        return networking;
     }
 
     private SideNavItem buildConfigNavItem() {
-        SideNavItem config = new SideNavItem("Configuração", ConfigMapsView.class, VaadinIcon.SLIDERS.create());
-        config.addItem(new SideNavItem("ConfigMaps", ConfigMapsView.class, VaadinIcon.FILE_TEXT.create()));
-        config.addItem(new SideNavItem("Secrets", SecretsView.class, VaadinIcon.LOCK.create()));
-        return config;
+        SideNavItem parameters = new SideNavItem("Parameters", ConfigMapsView.class, VaadinIcon.SLIDERS.create());
+        parameters.addItem(new SideNavItem("ConfigMaps", ConfigMapsView.class, VaadinIcon.FILE_TEXT.create()));
+        parameters.addItem(new SideNavItem("Secrets", SecretsView.class, VaadinIcon.LOCK.create()));
+        return parameters;
     }
 
     private SideNav buildObservabilidadeNav() {
@@ -270,7 +270,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         nav.setWidthFull();
         nav.addItem(
                 disabledNavItem("Logs", VaadinIcon.LIST),
-                disabledNavItem("Métricas", VaadinIcon.CHART)
+                disabledNavItem("Metrics", VaadinIcon.CHART)
         );
         return nav;
     }
@@ -280,8 +280,8 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         nav.setWidthFull();
         nav.addItem(
                 new SideNavItem("Clusters", ClustersView.class, VaadinIcon.SERVER.create()),
-                disabledNavItem("Usuários", VaadinIcon.USERS),
-                disabledNavItem("Configurações", VaadinIcon.COG)
+                disabledNavItem("Users", VaadinIcon.USERS),
+                disabledNavItem("Settings", VaadinIcon.COG)
         );
         return nav;
     }
