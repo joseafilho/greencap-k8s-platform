@@ -64,7 +64,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private HorizontalLayout buildToolbar() {
-        Button addBtn = new Button("Adicionar Cluster", VaadinIcon.PLUS.create(),
+        Button addBtn = new Button("Add Cluster", VaadinIcon.PLUS.create(),
                 e -> openAddDialog());
         addBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
@@ -76,12 +76,12 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
     }
 
     private Grid<Cluster> buildGrid() {
-        grid.addComponentColumn(this::buildRadioCell).setHeader("Ativo").setWidth("70px").setFlexGrow(0);
-        grid.addColumn(Cluster::getName).setHeader("Nome").setSortable(true).setFlexGrow(1);
+        grid.addComponentColumn(this::buildRadioCell).setHeader("Active").setWidth("70px").setFlexGrow(0);
+        grid.addColumn(Cluster::getName).setHeader("Name").setSortable(true).setFlexGrow(1);
         grid.addColumn(c -> c.getProvider().name()).setHeader("Provider").setWidth("120px");
         grid.addComponentColumn(c -> statusBadge(c.getConnectionStatus()))
                 .setHeader("Status").setWidth("140px");
-        grid.addComponentColumn(this::buildActions).setHeader("Ações").setWidth("140px");
+        grid.addComponentColumn(this::buildActions).setHeader("Actions").setWidth("140px");
         grid.setSizeFull();
         return grid;
     }
@@ -117,7 +117,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
                 .map(c -> (MainLayout) c)
                 .findFirst())
                 .ifPresent(MainLayout::updateClusterInfo);
-        notify("Cluster \"" + cluster.getName() + "\" definido como atual", NotificationVariant.LUMO_SUCCESS);
+        notify("Cluster \"" + cluster.getName() + "\" set as active", NotificationVariant.LUMO_SUCCESS);
     }
 
     private void persistActiveCluster(Cluster cluster) {
@@ -140,23 +140,23 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
     private HorizontalLayout buildActions(Cluster cluster) {
         Button testBtn = new Button(VaadinIcon.CONNECT.create(), e -> testConnection(cluster));
         testBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
-        testBtn.getElement().setAttribute("title", "Testar conexão");
+        testBtn.getElement().setAttribute("title", "Test connection");
 
         Button deleteBtn = new Button(VaadinIcon.TRASH.create(), e -> confirmDelete(cluster));
         deleteBtn.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ERROR);
-        deleteBtn.getElement().setAttribute("title", "Remover cluster");
+        deleteBtn.getElement().setAttribute("title", "Remove cluster");
 
         return new HorizontalLayout(testBtn, deleteBtn);
     }
 
     private void confirmDelete(Cluster cluster) {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Remover cluster");
+        dialog.setHeaderTitle("Remove cluster");
 
         dialog.add(new com.vaadin.flow.component.html.Paragraph(
-                "Tem certeza que deseja remover \"" + cluster.getName() + "\"? Esta ação não pode ser desfeita."));
+                "Are you sure you want to remove \"" + cluster.getName() + "\"? This action cannot be undone."));
 
-        Button confirmBtn = new Button("Remover", e -> {
+        Button confirmBtn = new Button("Remove", e -> {
             if (isActiveCluster(cluster)) {
                 clusterContext.setCluster(null);
                 clusterContext.setNamespace("default");
@@ -165,11 +165,11 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
             clusterService.deleteCluster(cluster);
             dialog.close();
             refreshGrid();
-            notify("Cluster " + cluster.getName() + " removido", NotificationVariant.LUMO_SUCCESS);
+            notify("Cluster " + cluster.getName() + " removed", NotificationVariant.LUMO_SUCCESS);
         });
         confirmBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
 
-        Button cancelBtn = new Button("Cancelar", e -> dialog.close());
+        Button cancelBtn = new Button("Cancel", e -> dialog.close());
 
         dialog.getFooter().add(cancelBtn, confirmBtn);
         dialog.open();
@@ -185,18 +185,18 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         }
         refreshGrid();
         if (status == ConnectionStatus.CONNECTED) {
-            notify("Conexão com " + cluster.getName() + " OK", NotificationVariant.LUMO_SUCCESS);
+            notify("Connection to " + cluster.getName() + " OK", NotificationVariant.LUMO_SUCCESS);
         } else {
-            notify("Falha ao conectar em " + cluster.getName(), NotificationVariant.LUMO_ERROR);
+            notify("Failed to connect to " + cluster.getName(), NotificationVariant.LUMO_ERROR);
         }
     }
 
     private void openAddDialog() {
         Dialog dialog = new Dialog();
-        dialog.setHeaderTitle("Novo Cluster");
+        dialog.setHeaderTitle("New Cluster");
         dialog.setWidth("560px");
 
-        TextField nameField = new TextField("Nome");
+        TextField nameField = new TextField("Name");
         nameField.setRequired(true);
         nameField.setWidthFull();
 
@@ -210,15 +210,15 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         kubeconfigArea.setWidthFull();
         kubeconfigArea.setMinHeight("200px");
         kubeconfigArea.setPlaceholder(
-                "Cole o conteúdo do kubeconfig ou faça upload do arquivo.\n\n" +
-                "⚠️ O kubeconfig deve ser portável e seguro: gere-o com\n" +
+                "Paste the kubeconfig content or upload the file.\n\n" +
+                "⚠️ The kubeconfig must be portable and self-contained: generate it with\n" +
                 "kubectl config view --flatten --minify\n" +
-                "para embutir certificados e exportar apenas o contexto necessário.");
+                "to embed certificates and export only the required context.");
 
         MemoryBuffer buffer = new MemoryBuffer();
         Upload upload = new Upload(buffer);
         upload.setMaxFileSize(512 * 1024);
-        upload.setDropLabel(new Span("Arraste o kubeconfig aqui"));
+        upload.setDropLabel(new Span("Drop the kubeconfig here"));
         upload.addSucceededListener(e -> {
             try {
                 String content = new String(buffer.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
@@ -228,7 +228,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
                     kubeconfigArea.setInvalid(true);
                 });
             } catch (IOException ex) {
-                notify("Erro ao ler arquivo", NotificationVariant.LUMO_ERROR);
+                notify("Error reading file", NotificationVariant.LUMO_ERROR);
             }
         });
 
@@ -240,14 +240,14 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         content.setSpacing(true);
         dialog.add(content);
 
-        Button saveBtn = new Button("Salvar", e -> {
+        Button saveBtn = new Button("Save", e -> {
             if (nameField.isEmpty()) {
-                nameField.setErrorMessage("Nome é obrigatório");
+                nameField.setErrorMessage("Name is required");
                 nameField.setInvalid(true);
                 return;
             }
             if (kubeconfigArea.isEmpty()) {
-                notify("Kubeconfig é obrigatório", NotificationVariant.LUMO_ERROR);
+                notify("Kubeconfig is required", NotificationVariant.LUMO_ERROR);
                 return;
             }
 
@@ -268,8 +268,8 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
             refreshGrid();
 
             String statusMsg = saved.getConnectionStatus() == ConnectionStatus.CONNECTED
-                    ? "conectado com sucesso"
-                    : "adicionado (sem conexão — verifique o kubeconfig)";
+                    ? "connected successfully"
+                    : "added (no connection — check the kubeconfig)";
             notify("Cluster " + saved.getName() + " " + statusMsg,
                     saved.getConnectionStatus() == ConnectionStatus.CONNECTED
                             ? NotificationVariant.LUMO_SUCCESS
@@ -277,7 +277,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         });
         saveBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
-        Button cancelBtn = new Button("Cancelar", e -> dialog.close());
+        Button cancelBtn = new Button("Cancel", e -> dialog.close());
 
         dialog.getFooter().add(cancelBtn, saveBtn);
         dialog.open();

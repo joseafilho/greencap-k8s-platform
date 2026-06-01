@@ -1,6 +1,6 @@
 # 05 — Traduzir ClustersView
 
-Status: todo
+Status: done
 
 ## Contexto
 
