@@ -1,12 +1,8 @@
 package io.greencap.k8s.ui;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -14,7 +10,6 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 import io.greencap.k8s.domain.cluster.Cluster;
 import io.greencap.k8s.kubernetes.ClusterContext;
 import io.greencap.k8s.kubernetes.ConfigurationService;
@@ -42,7 +37,7 @@ public class SecretsView extends VerticalLayout implements BeforeEnterObserver {
         setSizeFull();
         setPadding(true);
 
-        noClusterMessage = buildNoClusterMessage();
+        noClusterMessage = UiConstants.buildNoClusterMessage();
         buildSecretGrid();
 
         add(new H3("Secrets"), noClusterMessage, secretGrid);
@@ -56,22 +51,6 @@ public class SecretsView extends VerticalLayout implements BeforeEnterObserver {
         if (hasCluster) {
             loadSecrets();
         }
-    }
-
-    private VerticalLayout buildNoClusterMessage() {
-        Span text = new Span("Nenhum cluster ativo. Selecione um cluster em Configuração → Clusters.");
-        text.addClassNames(LumoUtility.TextColor.SECONDARY, LumoUtility.FontSize.MEDIUM);
-
-        Button goToClusters = new Button("Ir para Clusters", VaadinIcon.SERVER.create(),
-                e -> UI.getCurrent().navigate(ClustersView.class));
-        goToClusters.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-
-        VerticalLayout layout = new VerticalLayout(text, goToClusters);
-        layout.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        layout.setJustifyContentMode(JustifyContentMode.CENTER);
-        layout.setSizeFull();
-        layout.setVisible(false);
-        return layout;
     }
 
     private void buildSecretGrid() {

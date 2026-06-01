@@ -1,6 +1,6 @@
 # 01 — Refactor: extrair buildNoClusterMessage para UiConstants
 
-Status: todo
+Status: done
 
 ## Contexto
 
