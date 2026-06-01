@@ -48,3 +48,27 @@ _Avoid_: Secret, token, certificate, credentials
 Audit field on Cluster recording which User registered it. Does not imply ownership or restrict visibility — all Operators and Admins see all Clusters regardless of who created them.
 _Avoid_: Owner, author, responsible
 
+**Service**:
+A Kubernetes network resource that exposes a set of Pods under a stable IP and port. Types: ClusterIP, NodePort, LoadBalancer, ExternalName. In GreenCap, displayed read-only under the Rede section. Never confused with "Workload" — a Service routes traffic, it does not run code.
+_Avoid_: LoadBalancer (as a synonym for all Service types), endpoint, proxy
+
+**ConfigMap**:
+Key-value configuration data stored unencrypted in the cluster and injected into Workloads as environment variables or mounted files. In GreenCap, displayed read-only under the Configuração section — only metadata and key names are shown, not values.
+_Avoid_: Config, settings, properties
+
+**Secret**:
+Sensitive key-value data (credentials, tokens, certificates) stored in the cluster. In GreenCap, only metadata is displayed (name, type, key count) — values are never decoded or shown.
+_Avoid_: Kubeconfig (a Kubeconfig is a GreenCap concept; Secret is a Kubernetes object)
+
+**Rede**:
+UI section grouping network-related Kubernetes resources visible in GreenCap. Currently contains Services. Inspired by AWS Networking grouping. Future: Ingress.
+_Avoid_: Networking, network, LoadBalancer
+
+**Configuração**:
+UI section grouping configuration Kubernetes resources visible in GreenCap. Currently contains ConfigMaps and Secrets. Inspired by AWS Parameter Store / Secrets Manager grouping. Future: additional config types.
+_Avoid_: Config, settings
+
+**Topologia**:
+Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
+_Avoid_: Diagram, map, graph
+

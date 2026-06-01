@@ -16,6 +16,7 @@
 | 6 | Login, Logout + UX de autenticação | ✅ Concluído |
 | 7 | Cluster Atual por Sessão | ✅ Concluído |
 | 8 | Refinamento de Navegação + Workloads | ✅ Concluído |
+| 9 | Rede, Configuração e Demo | 🔲 Em andamento |
 
 ---
 
@@ -91,6 +92,14 @@
 - Trocar namespace na navbar re-navega para a view ativa, disparando `beforeEnter` e recarregando dados
 
 ---
+
+### Sprint 9 — Rede, Configuração e Demo (em andamento)
+
+- `samples/greencap-demo/` — aplicação 3-tier demo (nginx + httpbin + redis) com manifests Kubernetes cobrindo: Namespace, Deployments, Services (ClusterIP e NodePort), ConfigMap, Secret (Opaque), PVC e HPA
+- `create.sh` — habilita `metrics-server` via minikube addon e aplica todos os manifests em ordem; aguarda rollout dos Deployments
+- `delete.sh` — remove o namespace `greencap-demo` e todos os recursos filhos
+- `CONTEXT.md` — novos termos: `Service`, `ConfigMap`, `Secret`, `Rede`, `Configuração`, `Topologia` (futuro — grafo animado de objetos do namespace e suas relações)
+- Issues pendentes: sidebar Rede/Configuração, `ServicesView`, `ConfigMapsView`, `SecretsView`
 
 ## Backlog
 
