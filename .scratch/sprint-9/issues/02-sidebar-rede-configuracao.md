@@ -1,6 +1,6 @@
 # 02 — Sidebar: grupos Rede e Configuração
 
-Status: todo
+Status: done
 
 ## Contexto
 

@@ -238,6 +238,8 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         nav.addItem(
                 new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create()),
                 buildWorkloadsNavItem(),
+                buildRedeNavItem(),
+                buildConfigNavItem(),
                 disabledNavItem("Topologia", VaadinIcon.CLUSTER)
         );
         return nav;
@@ -248,6 +250,19 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         workloads.addItem(new SideNavItem("Pods", PodsView.class, VaadinIcon.CUBE.create()));
         workloads.addItem(new SideNavItem("Deployments", DeploymentsView.class, VaadinIcon.ROCKET.create()));
         return workloads;
+    }
+
+    private SideNavItem buildRedeNavItem() {
+        SideNavItem rede = new SideNavItem("Rede", ServicesView.class, VaadinIcon.CONNECT.create());
+        rede.addItem(new SideNavItem("Services", ServicesView.class, VaadinIcon.SHARE.create()));
+        return rede;
+    }
+
+    private SideNavItem buildConfigNavItem() {
+        SideNavItem config = new SideNavItem("Configuração", ConfigMapsView.class, VaadinIcon.SLIDERS.create());
+        config.addItem(new SideNavItem("ConfigMaps", ConfigMapsView.class, VaadinIcon.FILE_TEXT.create()));
+        config.addItem(new SideNavItem("Secrets", SecretsView.class, VaadinIcon.LOCK.create()));
+        return config;
     }
 
     private SideNav buildObservabilidadeNav() {
