@@ -257,9 +257,9 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     }
 
     private SideNavItem buildWorkloadsNavItem() {
-        SideNavItem workloads = new SideNavItem("Workloads", PodsView.class, VaadinIcon.CUBES.create());
-        workloads.addItem(new SideNavItem("Pods", PodsView.class, VaadinIcon.CUBE.create()));
+        SideNavItem workloads = new SideNavItem("Workloads", DeploymentsView.class, VaadinIcon.CUBES.create());
         workloads.addItem(new SideNavItem("Deployments", DeploymentsView.class, VaadinIcon.ROCKET.create()));
+        workloads.addItem(new SideNavItem("Pods", PodsView.class, VaadinIcon.CUBE.create()));
         return workloads;
     }
 
