@@ -50,7 +50,7 @@ ui/          # Views Vaadin e MainLayout
 - Formato: `tipo: descrição em português`
 - Tipos: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
 - Exemplo: `feat: adiciona visualização de logs em tempo real`
-- Co-autor: `Co-Authored-By: Claude Sonnet`
+- Co-autor: `Programado em par com: Claude IA`
 - Antes de cada commit: atualizar `docs/sprints.md` refletindo o que foi entregue e incluir as alterações no mesmo commit
 
 ## Comentários
