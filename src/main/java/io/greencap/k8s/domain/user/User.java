@@ -39,6 +39,9 @@ public class User {
     @JoinColumn(name = "active_cluster_id")
     private Cluster activeCluster;
 
+    @Column(name = "active_namespace")
+    private String activeNamespace;
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

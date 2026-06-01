@@ -46,6 +46,19 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
+    public void updateActiveNamespace(String username, String namespace) {
+        userRepository.findByUsername(username).ifPresent(user -> {
+            user.setActiveNamespace(namespace);
+            userRepository.save(user);
+        });
+    }
+
+    public Optional<String> findActiveNamespace(String username) {
+        return userRepository.findByUsername(username)
+                .map(User::getActiveNamespace);
+    }
+
+    @Transactional
     public User createUser(String username, String email, String rawPassword, Role role) {
         User user = new User();
         user.setUsername(username);

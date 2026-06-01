@@ -21,6 +21,7 @@
 | 11 | UI Polish — ícones e navegação | ✅ Concluído |
 | 12 | Observabilidade: Events | ✅ Concluído |
 | 13 | Observabilidade: Metrics + UX global | ✅ Concluído |
+| 14 | Persistência do Namespace ativo | ✅ Concluído |
 
 ---
 
@@ -117,6 +118,16 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 14 — Persistência do Namespace ativo
+
+- Campo `activeNamespace` (String) adicionado à entidade `User`
+- Migration `V7__add_active_namespace_to_users.sql`: `ALTER TABLE users ADD COLUMN active_namespace VARCHAR(255)`
+- `UserService.updateActiveNamespace()` e `findActiveNamespace()` seguindo padrão de `activeCluster`
+- `MainLayout`: ao trocar namespace no ComboBox, persiste via `updateActiveNamespace`
+- `MainLayout`: no login, restaura `activeNamespace` do banco antes de carregar a lista de namespaces
+- Fallback silencioso: namespace salvo → "default" → primeiro da lista (lógica pré-existente)
+- Validado: compilação e testes passando
 
 ### Sprint 13 — Observabilidade: Metrics + UX global
 

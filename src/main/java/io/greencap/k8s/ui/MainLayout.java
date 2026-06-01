@@ -35,6 +35,7 @@ import java.util.List;
 public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final ClusterContext clusterContext;
+    private final UserService userService;
     private final NamespaceService namespaceService;
     private final HorizontalLayout clusterInfoLayout = new HorizontalLayout();
     private final HorizontalLayout namespaceLayout = new HorizontalLayout();
@@ -46,6 +47,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     public MainLayout(ClusterContext clusterContext, UserService userService, NamespaceService namespaceService) {
         this.clusterContext = clusterContext;
+        this.userService = userService;
         this.namespaceService = namespaceService;
         getElement().setAttribute("theme", Lumo.DARK);
         setPrimarySection(Section.DRAWER);
@@ -62,6 +64,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         if (clusterContext.getCluster() == null) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
             userService.findActiveCluster(username).ifPresent(clusterContext::setCluster);
+            userService.findActiveNamespace(username).ifPresent(clusterContext::setNamespace);
         }
     }
 
@@ -158,6 +161,8 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         namespaceCombo.addValueChangeListener(e -> {
             if (e.getValue() != null && !suppressNavigation) {
                 clusterContext.setNamespace(e.getValue());
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                userService.updateActiveNamespace(username, e.getValue());
                 UI.getCurrent().navigate(currentPath);
             }
         });

@@ -108,5 +108,6 @@ Toda sprint segue este ciclo antes de qualquer código:
 1. **Planejamento** — usar `/grill-with-docs` para definir escopo, requisitos e restrições da sprint
 2. **Issues** — criar uma issue por entrega em `.scratch/sprint-N/issues/NN-slug.md` (ver `docs/agents/issue-tracker.md`)
 3. **Implementação** — codificar seguindo as convenções deste guia, marcando a issue como `in-progress`
-4. **Testes** — compilar (`./gradlew compileJava`), rodar testes automatizados (`./gradlew test`) e validar manualmente os fluxos alterados no browser
-5. **Fechamento** — marcar a issue como `done`, atualizar `docs/sprints.md` e incluir tudo no mesmo commit
+4. **Testes automatizados** — compilar (`./gradlew compileJava`) e rodar testes (`./gradlew test`); reportar resultado ao usuário
+5. **Aceite manual** — aguardar o usuário validar os fluxos no browser e confirmar o aceite; não avançar sem essa confirmação
+6. **Fechamento** — somente após aceite do usuário: marcar a issue como `done`, atualizar `docs/sprints.md` e fazer commit incluindo tudo
