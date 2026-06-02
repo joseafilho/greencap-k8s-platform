@@ -22,6 +22,7 @@
 | 12 | Observabilidade: Events | ✅ Concluído |
 | 13 | Observabilidade: Metrics + UX global | ✅ Concluído |
 | 14 | Persistência do Namespace ativo | ✅ Concluído |
+| 15 | Visualização de Manifest (YAML) | ✅ Concluído |
 
 ---
 
@@ -118,6 +119,15 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 15 — Visualização de Manifest (YAML)
+
+- `ManifestService`: busca e serializa YAML via Fabric8 `Serialization.asYaml()` para pod, deployment, service, configmap, secret
+- `ManifestView`: página `/yaml/{resourceType}/{namespace}/{name}` com YAML em `<pre>` monospace, botão Back e título com tipo/nome do recurso
+- Coluna de ação com ícone `CODE` (tamanho `UiConstants.ICON_SIZE`) em todas as 5 views de listagem (Pods, Deployments, Services, ConfigMaps, Secrets)
+- Bug fix: trocar namespace com ManifestView ativa dispara `go(PREVIOUS_PAGE)` ao invés de recarregar a view, evitando YAML desatualizado
+- `CONTEXT.md`: termo `Manifest` adicionado ao glossário
+- Validado manualmente com aceite do usuário
 
 ### Sprint 14 — Persistência do Namespace ativo
 

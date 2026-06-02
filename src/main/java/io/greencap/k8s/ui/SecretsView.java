@@ -1,8 +1,11 @@
 package io.greencap.k8s.ui;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -59,6 +62,15 @@ public class SecretsView extends VerticalLayout implements BeforeEnterObserver {
         secretGrid.addColumn(s -> s.keyCount() + " keys").setHeader("Keys").setWidth("100px").setResizable(true);
         secretGrid.addColumn(SecretInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
         secretGrid.addColumn(SecretInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
+        secretGrid.addComponentColumn(s -> {
+            var icon = VaadinIcon.CODE.create();
+            icon.setSize(UiConstants.ICON_SIZE);
+            Button btn = new Button(icon);
+            btn.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
+            btn.getElement().setAttribute("title", "View Manifest");
+            btn.addClickListener(e -> UI.getCurrent().navigate("yaml/secret/" + s.namespace() + "/" + s.name()));
+            return btn;
+        }).setHeader("").setWidth("60px").setFlexGrow(0);
         secretGrid.setSizeFull();
         secretGrid.setItems(Collections.emptyList());
         secretGrid.setVisible(false);

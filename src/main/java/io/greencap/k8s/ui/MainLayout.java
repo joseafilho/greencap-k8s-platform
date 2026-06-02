@@ -163,7 +163,12 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
                 clusterContext.setNamespace(e.getValue());
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
                 userService.updateActiveNamespace(username, e.getValue());
-                UI.getCurrent().navigate(currentPath);
+                final int PREVIOUS_PAGE = -1;
+                if (currentPath.startsWith("yaml/")) {
+                    UI.getCurrent().getPage().getHistory().go(PREVIOUS_PAGE);
+                } else {
+                    UI.getCurrent().navigate(currentPath);
+                }
             }
         });
 

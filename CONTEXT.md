@@ -76,6 +76,10 @@ _Avoid_: Stats, usage, telemetry
 A Kubernetes-native occurrence record emitted by the control plane or controllers when something happens to a resource. Has a `type` (always `Normal` or `Warning` — the only two values defined by the Kubernetes API spec), a `reason` (machine-readable cause), a `message` (human-readable description), an `involvedObject` (the resource that triggered it), and a `count` (how many times it repeated). In GreenCap, displayed read-only under the Observability section, scoped to the active Namespace.
 _Avoid_: Log, alert, notification
 
+**Manifest**:
+The full YAML representation of a Kubernetes resource as returned by the API server. Read-only in GreenCap — displayed in a dedicated page per resource, reachable via an action icon in each listing view. The page URL encodes resource type, namespace, and name (e.g., `/yaml/pod/payments/my-pod`) to support deep-linking and future editing.
+_Avoid_: Config, definition, spec
+
 **Topologia**:
 Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
 _Avoid_: Diagram, map, graph

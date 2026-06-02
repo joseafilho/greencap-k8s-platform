@@ -1,8 +1,11 @@
 package io.greencap.k8s.ui;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -60,6 +63,15 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
         podGrid.addColumn(PodInfo::node).setHeader("Node").setFlexGrow(1).setResizable(true);
         podGrid.addColumn(PodInfo::restarts).setHeader("Restarts").setWidth("90px").setResizable(true);
         podGrid.addColumn(PodInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
+        podGrid.addComponentColumn(p -> {
+            var icon = VaadinIcon.CODE.create();
+            icon.setSize(UiConstants.ICON_SIZE);
+            Button btn = new Button(icon);
+            btn.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_ICON);
+            btn.getElement().setAttribute("title", "View Manifest");
+            btn.addClickListener(e -> UI.getCurrent().navigate("yaml/pod/" + p.namespace() + "/" + p.name()));
+            return btn;
+        }).setHeader("").setWidth("60px").setFlexGrow(0);
         podGrid.setSizeFull();
         podGrid.setItems(Collections.emptyList());
         podGrid.setVisible(false);
