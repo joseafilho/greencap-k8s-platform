@@ -4,10 +4,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -19,7 +22,8 @@ import io.greencap.k8s.kubernetes.StorageService;
 import io.greencap.k8s.kubernetes.dto.StorageClassInfo;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "infrastructure/storageclasses", layout = MainLayout.class)
 @PageTitle("Storage Classes — GreenCap K8s")
@@ -31,6 +35,9 @@ public class StorageClassesView extends VerticalLayout implements BeforeEnterObs
 
     private final Grid<StorageClassInfo> grid = new Grid<>(StorageClassInfo.class, false);
     private final VerticalLayout noClusterMessage;
+
+    private final List<StorageClassInfo> allItems = new ArrayList<>();
+    private final ListDataProvider<StorageClassInfo> dataProvider = new ListDataProvider<>(allItems);
 
     public StorageClassesView(StorageService storageService, ClusterContext clusterContext) {
         this.storageService = storageService;
@@ -56,8 +63,8 @@ public class StorageClassesView extends VerticalLayout implements BeforeEnterObs
     }
 
     private void buildGrid() {
-        grid.addColumn(StorageClassInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
-        grid.addColumn(StorageClassInfo::provisioner).setHeader("Provisioner").setFlexGrow(2).setResizable(true);
+        var nameCol        = grid.addColumn(StorageClassInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        var provisionerCol = grid.addColumn(StorageClassInfo::provisioner).setHeader("Provisioner").setFlexGrow(2).setResizable(true);
         grid.addColumn(StorageClassInfo::reclaimPolicy).setHeader("Reclaim Policy").setWidth("130px").setResizable(true);
         grid.addColumn(StorageClassInfo::volumeBindingMode).setHeader("Binding Mode").setWidth("180px").setResizable(true);
         grid.addColumn(StorageClassInfo::allowVolumeExpansion).setHeader("Allow Expansion").setWidth("150px").setResizable(true);
@@ -73,8 +80,23 @@ public class StorageClassesView extends VerticalLayout implements BeforeEnterObs
             return btn;
         }).setHeader("").setWidth("60px").setFlexGrow(0);
 
+        grid.setDataProvider(dataProvider);
+
+        TextField nameFilter        = buildFilterField();
+        TextField provisionerFilter = buildFilterField();
+
+        dataProvider.setFilter(item ->
+            matches(item.name(), nameFilter.getValue()) &&
+            matches(item.provisioner(), provisionerFilter.getValue()));
+
+        nameFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+        provisionerFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+
+        HeaderRow filterRow = grid.appendHeaderRow();
+        filterRow.getCell(nameCol).setComponent(nameFilter);
+        filterRow.getCell(provisionerCol).setComponent(provisionerFilter);
+
         grid.setSizeFull();
-        grid.setItems(Collections.emptyList());
         grid.setVisible(false);
     }
 
@@ -82,13 +104,31 @@ public class StorageClassesView extends VerticalLayout implements BeforeEnterObs
         Cluster cluster = clusterContext.getCluster();
         if (cluster == null) return false;
         try {
-            grid.setItems(storageService.listStorageClasses(cluster));
+            List<StorageClassInfo> items = storageService.listStorageClasses(cluster);
+            allItems.clear();
+            allItems.addAll(items);
+            dataProvider.refreshAll();
             return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
-            grid.setItems(Collections.emptyList());
+            allItems.clear();
+            dataProvider.refreshAll();
             return false;
         }
+    }
+
+    private TextField buildFilterField() {
+        TextField field = new TextField();
+        field.setPlaceholder("Filter...");
+        field.setClearButtonVisible(true);
+        field.setWidth("100%");
+        field.getElement().getThemeList().add("small");
+        return field;
+    }
+
+    private boolean matches(String value, String filter) {
+        return filter == null || filter.isBlank() ||
+               (value != null && value.toLowerCase().contains(filter.toLowerCase().trim()));
     }
 
     private void notify(String message, NotificationVariant variant) {

@@ -4,11 +4,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -20,7 +23,8 @@ import io.greencap.k8s.kubernetes.StorageService;
 import io.greencap.k8s.kubernetes.dto.PersistentVolumeClaimInfo;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "storage/pvcs", layout = MainLayout.class)
 @PageTitle("Volume Claims (PVC) — GreenCap K8s")
@@ -32,6 +36,9 @@ public class PersistentVolumeClaimsView extends VerticalLayout implements Before
 
     private final Grid<PersistentVolumeClaimInfo> grid = new Grid<>(PersistentVolumeClaimInfo.class, false);
     private final VerticalLayout noClusterMessage;
+
+    private final List<PersistentVolumeClaimInfo> allItems = new ArrayList<>();
+    private final ListDataProvider<PersistentVolumeClaimInfo> dataProvider = new ListDataProvider<>(allItems);
 
     public PersistentVolumeClaimsView(StorageService storageService, ClusterContext clusterContext) {
         this.storageService = storageService;
@@ -57,12 +64,11 @@ public class PersistentVolumeClaimsView extends VerticalLayout implements Before
     }
 
     private void buildGrid() {
-        grid.addColumn(PersistentVolumeClaimInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
-        grid.addComponentColumn(pvc -> statusBadge(pvc.status())).setHeader("Status").setWidth("110px").setResizable(true);
+        var nameCol   = grid.addColumn(PersistentVolumeClaimInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        var statusCol = grid.addComponentColumn(pvc -> statusBadge(pvc.status())).setHeader("Status").setWidth("110px").setResizable(true);
         grid.addColumn(PersistentVolumeClaimInfo::capacity).setHeader("Capacity").setWidth("100px").setResizable(true);
         grid.addColumn(PersistentVolumeClaimInfo::accessMode).setHeader("Access Mode").setWidth("150px").setResizable(true);
         grid.addColumn(PersistentVolumeClaimInfo::storageClass).setHeader("Storage Class").setFlexGrow(1).setResizable(true);
-        grid.addColumn(PersistentVolumeClaimInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
         grid.addColumn(PersistentVolumeClaimInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         grid.addComponentColumn(pvc -> {
             var icon = VaadinIcon.CODE.create();
@@ -75,8 +81,23 @@ public class PersistentVolumeClaimsView extends VerticalLayout implements Before
             return btn;
         }).setHeader("").setWidth("60px").setFlexGrow(0);
 
+        grid.setDataProvider(dataProvider);
+
+        TextField nameFilter   = buildFilterField();
+        TextField statusFilter = buildFilterField();
+
+        dataProvider.setFilter(item ->
+            matches(item.name(), nameFilter.getValue()) &&
+            matches(item.status(), statusFilter.getValue()));
+
+        nameFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+        statusFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+
+        HeaderRow filterRow = grid.appendHeaderRow();
+        filterRow.getCell(nameCol).setComponent(nameFilter);
+        filterRow.getCell(statusCol).setComponent(statusFilter);
+
         grid.setSizeFull();
-        grid.setItems(Collections.emptyList());
         grid.setVisible(false);
     }
 
@@ -85,11 +106,15 @@ public class PersistentVolumeClaimsView extends VerticalLayout implements Before
         if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
-            grid.setItems(storageService.listPersistentVolumeClaims(cluster, namespace));
+            List<PersistentVolumeClaimInfo> items = storageService.listPersistentVolumeClaims(cluster, namespace);
+            allItems.clear();
+            allItems.addAll(items);
+            dataProvider.refreshAll();
             return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
-            grid.setItems(Collections.emptyList());
+            allItems.clear();
+            dataProvider.refreshAll();
             return false;
         }
     }
@@ -104,6 +129,20 @@ public class PersistentVolumeClaimsView extends VerticalLayout implements Before
             default             -> {}
         }
         return badge;
+    }
+
+    private TextField buildFilterField() {
+        TextField field = new TextField();
+        field.setPlaceholder("Filter...");
+        field.setClearButtonVisible(true);
+        field.setWidth("100%");
+        field.getElement().getThemeList().add("small");
+        return field;
+    }
+
+    private boolean matches(String value, String filter) {
+        return filter == null || filter.isBlank() ||
+               (value != null && value.toLowerCase().contains(filter.toLowerCase().trim()));
     }
 
     private void notify(String message, NotificationVariant variant) {

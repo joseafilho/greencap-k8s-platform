@@ -29,6 +29,7 @@
 | 19 | Storage — PersistentVolumeClaims | ✅ Concluído |
 | 20 | Infrastructure — PersistentVolumes + StorageClasses | ✅ Concluído |
 | 21 | UX — Links entre recursos + Sidebar redimensionável | ✅ Concluído |
+| 22 | UX — Remoção de Namespace redundante + Filtros por coluna | ✅ Concluído |
 
 ---
 
@@ -125,6 +126,14 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 22 — UX: Remoção de Namespace redundante + Filtros por coluna
+
+- Coluna Namespace removida das 9 views namespace-scoped: Pods, Deployments, ReplicaSets, Services, ConfigMaps, Secrets, HorizontalScaler, PVC, Metrics
+- Filtros por coluna adicionados em 12 views via `ListDataProvider` + `HeaderRow`
+- Padrão: `allItems` + `dataProvider.setFilter()` + `dataProvider.refreshAll()` — client-side, sem chamadas extras à API
+- Filtros mantidos ativos entre reloads via refresh button
+- Validado manualmente com aceite do usuário
 
 ### Sprint 21 — UX: Links entre recursos + Sidebar redimensionável
 

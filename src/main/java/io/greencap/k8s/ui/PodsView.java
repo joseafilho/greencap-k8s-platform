@@ -4,11 +4,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -20,7 +23,8 @@ import io.greencap.k8s.kubernetes.WorkloadService;
 import io.greencap.k8s.kubernetes.dto.PodInfo;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "workloads/pods", layout = MainLayout.class)
 @PageTitle("Pods — GreenCap K8s")
@@ -32,6 +36,9 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
 
     private final Grid<PodInfo> podGrid = new Grid<>(PodInfo.class, false);
     private final VerticalLayout noClusterMessage;
+
+    private final List<PodInfo> allItems = new ArrayList<>();
+    private final ListDataProvider<PodInfo> dataProvider = new ListDataProvider<>(allItems);
 
     public PodsView(WorkloadService workloadService, ClusterContext clusterContext) {
         this.workloadService = workloadService;
@@ -57,9 +64,8 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
     }
 
     private void buildPodGrid() {
-        podGrid.addColumn(PodInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
-        podGrid.addColumn(PodInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
-        podGrid.addComponentColumn(p -> phaseBadge(p.phase())).setHeader("Status").setWidth("120px").setResizable(true);
+        var nameCol   = podGrid.addColumn(PodInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        var statusCol = podGrid.addComponentColumn(p -> phaseBadge(p.phase())).setHeader("Status").setWidth("120px").setResizable(true);
         podGrid.addColumn(PodInfo::node).setHeader("Node").setFlexGrow(1).setResizable(true);
         podGrid.addColumn(PodInfo::restarts).setHeader("Restarts").setWidth("90px").setResizable(true);
         podGrid.addColumn(PodInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
@@ -72,8 +78,24 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
             btn.addClickListener(e -> UI.getCurrent().navigate("yaml/pod/" + p.namespace() + "/" + p.name()));
             return btn;
         }).setHeader("").setWidth("60px").setFlexGrow(0);
+
+        podGrid.setDataProvider(dataProvider);
+
+        TextField nameFilter   = buildFilterField();
+        TextField statusFilter = buildFilterField();
+
+        dataProvider.setFilter(item ->
+            matches(item.name(), nameFilter.getValue()) &&
+            matches(item.phase(), statusFilter.getValue()));
+
+        nameFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+        statusFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+
+        HeaderRow filterRow = podGrid.appendHeaderRow();
+        filterRow.getCell(nameCol).setComponent(nameFilter);
+        filterRow.getCell(statusCol).setComponent(statusFilter);
+
         podGrid.setSizeFull();
-        podGrid.setItems(Collections.emptyList());
         podGrid.setVisible(false);
     }
 
@@ -82,11 +104,15 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
         if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
-            podGrid.setItems(workloadService.listPods(cluster, namespace));
+            List<PodInfo> items = workloadService.listPods(cluster, namespace);
+            allItems.clear();
+            allItems.addAll(items);
+            dataProvider.refreshAll();
             return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
-            podGrid.setItems(Collections.emptyList());
+            allItems.clear();
+            dataProvider.refreshAll();
             return false;
         }
     }
@@ -101,6 +127,20 @@ public class PodsView extends VerticalLayout implements BeforeEnterObserver {
             default                  -> {}
         }
         return badge;
+    }
+
+    private TextField buildFilterField() {
+        TextField field = new TextField();
+        field.setPlaceholder("Filter...");
+        field.setClearButtonVisible(true);
+        field.setWidth("100%");
+        field.getElement().getThemeList().add("small");
+        return field;
+    }
+
+    private boolean matches(String value, String filter) {
+        return filter == null || filter.isBlank() ||
+               (value != null && value.toLowerCase().contains(filter.toLowerCase().trim()));
     }
 
     private void notify(String message, NotificationVariant variant) {

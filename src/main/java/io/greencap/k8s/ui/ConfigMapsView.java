@@ -4,10 +4,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -19,7 +22,8 @@ import io.greencap.k8s.kubernetes.KubernetesOperationException;
 import io.greencap.k8s.kubernetes.dto.ConfigMapInfo;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "config/configmaps", layout = MainLayout.class)
 @PageTitle("ConfigMaps — GreenCap K8s")
@@ -31,6 +35,9 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
 
     private final Grid<ConfigMapInfo> configMapGrid = new Grid<>(ConfigMapInfo.class, false);
     private final VerticalLayout noClusterMessage;
+
+    private final List<ConfigMapInfo> allItems = new ArrayList<>();
+    private final ListDataProvider<ConfigMapInfo> dataProvider = new ListDataProvider<>(allItems);
 
     public ConfigMapsView(ConfigurationService configurationService, ClusterContext clusterContext) {
         this.configurationService = configurationService;
@@ -56,9 +63,8 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private void buildConfigMapGrid() {
-        configMapGrid.addColumn(ConfigMapInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        var nameCol = configMapGrid.addColumn(ConfigMapInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
         configMapGrid.addColumn(cm -> cm.keyCount() + " keys").setHeader("Keys").setWidth("100px").setResizable(true);
-        configMapGrid.addColumn(ConfigMapInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
         configMapGrid.addColumn(ConfigMapInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         configMapGrid.addComponentColumn(cm -> {
             var icon = VaadinIcon.CODE.create();
@@ -69,8 +75,19 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
             btn.addClickListener(e -> UI.getCurrent().navigate("yaml/configmap/" + cm.namespace() + "/" + cm.name()));
             return btn;
         }).setHeader("").setWidth("60px").setFlexGrow(0);
+
+        configMapGrid.setDataProvider(dataProvider);
+
+        TextField nameFilter = buildFilterField();
+
+        dataProvider.setFilter(item -> matches(item.name(), nameFilter.getValue()));
+
+        nameFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+
+        HeaderRow filterRow = configMapGrid.appendHeaderRow();
+        filterRow.getCell(nameCol).setComponent(nameFilter);
+
         configMapGrid.setSizeFull();
-        configMapGrid.setItems(Collections.emptyList());
         configMapGrid.setVisible(false);
     }
 
@@ -79,13 +96,31 @@ public class ConfigMapsView extends VerticalLayout implements BeforeEnterObserve
         if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
-            configMapGrid.setItems(configurationService.listConfigMaps(cluster, namespace));
+            List<ConfigMapInfo> items = configurationService.listConfigMaps(cluster, namespace);
+            allItems.clear();
+            allItems.addAll(items);
+            dataProvider.refreshAll();
             return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
-            configMapGrid.setItems(Collections.emptyList());
+            allItems.clear();
+            dataProvider.refreshAll();
             return false;
         }
+    }
+
+    private TextField buildFilterField() {
+        TextField field = new TextField();
+        field.setPlaceholder("Filter...");
+        field.setClearButtonVisible(true);
+        field.setWidth("100%");
+        field.getElement().getThemeList().add("small");
+        return field;
+    }
+
+    private boolean matches(String value, String filter) {
+        return filter == null || filter.isBlank() ||
+               (value != null && value.toLowerCase().contains(filter.toLowerCase().trim()));
     }
 
     private void notify(String message, NotificationVariant variant) {

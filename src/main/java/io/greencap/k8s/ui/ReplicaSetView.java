@@ -4,11 +4,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -20,7 +23,8 @@ import io.greencap.k8s.kubernetes.WorkloadService;
 import io.greencap.k8s.kubernetes.dto.ReplicaSetInfo;
 import jakarta.annotation.security.PermitAll;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 @Route(value = "workloads/replicasets", layout = MainLayout.class)
 @PageTitle("ReplicaSets — GreenCap K8s")
@@ -32,6 +36,9 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
 
     private final Grid<ReplicaSetInfo> grid = new Grid<>(ReplicaSetInfo.class, false);
     private final VerticalLayout noClusterMessage;
+
+    private final List<ReplicaSetInfo> allItems = new ArrayList<>();
+    private final ListDataProvider<ReplicaSetInfo> dataProvider = new ListDataProvider<>(allItems);
 
     public ReplicaSetView(WorkloadService workloadService, ClusterContext clusterContext) {
         this.workloadService = workloadService;
@@ -57,9 +64,8 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
     }
 
     private void buildGrid() {
-        grid.addColumn(ReplicaSetInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
-        grid.addColumn(ReplicaSetInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
-        grid.addComponentColumn(rs -> navigationLink(rs.owner(), DeploymentsView.class))
+        var nameCol  = grid.addColumn(ReplicaSetInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
+        var ownerCol = grid.addComponentColumn(rs -> navigationLink(rs.owner(), DeploymentsView.class))
                 .setHeader("Owner").setFlexGrow(1).setResizable(true);
         grid.addComponentColumn(rs -> replicasBadge(rs.ready(), rs.desired()))
                 .setHeader("Ready / Desired").setWidth("130px").setResizable(true);
@@ -75,8 +81,23 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
             return btn;
         }).setHeader("").setWidth("60px").setFlexGrow(0);
 
+        grid.setDataProvider(dataProvider);
+
+        TextField nameFilter  = buildFilterField();
+        TextField ownerFilter = buildFilterField();
+
+        dataProvider.setFilter(item ->
+            matches(item.name(), nameFilter.getValue()) &&
+            matches(item.owner(), ownerFilter.getValue()));
+
+        nameFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+        ownerFilter.addValueChangeListener(e -> dataProvider.refreshAll());
+
+        HeaderRow filterRow = grid.appendHeaderRow();
+        filterRow.getCell(nameCol).setComponent(nameFilter);
+        filterRow.getCell(ownerCol).setComponent(ownerFilter);
+
         grid.setSizeFull();
-        grid.setItems(Collections.emptyList());
         grid.setVisible(false);
     }
 
@@ -85,11 +106,15 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
         if (cluster == null) return false;
         String namespace = clusterContext.getNamespace();
         try {
-            grid.setItems(workloadService.listReplicaSets(cluster, namespace));
+            List<ReplicaSetInfo> items = workloadService.listReplicaSets(cluster, namespace);
+            allItems.clear();
+            allItems.addAll(items);
+            dataProvider.refreshAll();
             return true;
         } catch (KubernetesOperationException e) {
             notify(e.getMessage(), NotificationVariant.LUMO_ERROR);
-            grid.setItems(Collections.emptyList());
+            allItems.clear();
+            dataProvider.refreshAll();
             return false;
         }
     }
@@ -114,6 +139,20 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
             badge.getElement().getThemeList().add("contrast");
         }
         return badge;
+    }
+
+    private TextField buildFilterField() {
+        TextField field = new TextField();
+        field.setPlaceholder("Filter...");
+        field.setClearButtonVisible(true);
+        field.setWidth("100%");
+        field.getElement().getThemeList().add("small");
+        return field;
+    }
+
+    private boolean matches(String value, String filter) {
+        return filter == null || filter.isBlank() ||
+               (value != null && value.toLowerCase().contains(filter.toLowerCase().trim()));
     }
 
     private void notify(String message, NotificationVariant variant) {
