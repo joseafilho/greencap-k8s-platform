@@ -80,6 +80,14 @@ _Avoid_: Log, alert, notification
 The full YAML representation of a Kubernetes resource as returned by the API server. Read-only in GreenCap — displayed in a dedicated page per resource, reachable via an action icon in each listing view. The page URL encodes resource type, namespace, and name (e.g., `/yaml/pod/payments/my-pod`) to support deep-linking and future editing.
 _Avoid_: Config, definition, spec
 
+**HorizontalScaler**:
+A Kubernetes `HorizontalPodAutoscaler` resource that automatically adjusts the replica count of a target Workload (typically a Deployment) based on observed metrics. In GreenCap, displayed read-only under the Auto Scaling section, scoped to the active Namespace.
+_Avoid_: HPA, AutoScaler, HorizontalPodAutoscaler
+
+**AutoScaling**:
+UI section grouping scaling-related Kubernetes resources. Currently contains HorizontalScaler. Inspired by AWS Auto Scaling grouping.
+_Avoid_: Scaling, autoscaling, scaler
+
 **Topologia**:
 Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
 _Avoid_: Diagram, map, graph

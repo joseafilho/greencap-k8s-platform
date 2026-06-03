@@ -327,13 +327,14 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         SideNav nav = new SideNav();
         nav.setWidthFull();
 
-        SideNavItem dashboard  = new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create());
-        SideNavItem workloads  = buildWorkloadsNavItem();
-        SideNavItem networking = buildRedeNavItem();
-        SideNavItem parameters = buildConfigNavItem();
-        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters));
+        SideNavItem dashboard   = new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create());
+        SideNavItem workloads   = buildWorkloadsNavItem();
+        SideNavItem networking  = buildRedeNavItem();
+        SideNavItem parameters  = buildConfigNavItem();
+        SideNavItem autoScaling = buildAutoScalingNavItem();
+        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters, autoScaling));
 
-        nav.addItem(dashboard, workloads, networking, parameters, disabledNavItem("Topologia", VaadinIcon.CLUSTER));
+        nav.addItem(dashboard, workloads, autoScaling, networking, parameters, disabledNavItem("Topologia", VaadinIcon.CLUSTER));
         return nav;
     }
 
@@ -355,6 +356,12 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         parameters.addItem(new SideNavItem("ConfigMaps", ConfigMapsView.class, VaadinIcon.FILE_TEXT.create()));
         parameters.addItem(new SideNavItem("Secrets", SecretsView.class, VaadinIcon.LOCK.create()));
         return parameters;
+    }
+
+    private SideNavItem buildAutoScalingNavItem() {
+        SideNavItem autoScaling = new SideNavItem("Auto Scaling", HorizontalScalerView.class, VaadinIcon.SCALE.create());
+        autoScaling.addItem(new SideNavItem("Horizontal Scaler", HorizontalScalerView.class, VaadinIcon.RESIZE_H.create()));
+        return autoScaling;
     }
 
     private SideNav buildObservabilidadeNav() {

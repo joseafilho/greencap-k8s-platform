@@ -24,6 +24,7 @@
 | 14 | Persistência do Namespace ativo | ✅ Concluído |
 | 15 | Visualização de Manifest (YAML) | ✅ Concluído |
 | 16 | UX pós-login com cluster inacessível | ✅ Concluído |
+| 17 | Auto Scaling — HorizontalScaler (HPA) | ✅ Concluído |
 
 ---
 
@@ -120,6 +121,16 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 17 — Auto Scaling: HorizontalScaler (HPA)
+
+- Termo canônico `HorizontalScaler` adicionado ao `CONTEXT.md` (evita HPA, AutoScaler, HorizontalPodAutoscaler)
+- `HorizontalScalerInfo` record DTO: name, namespace, target, minReplicas, maxReplicas, currentReplicas, metrics, age
+- `AutoScalingService.listHorizontalScalers()`: Fabric8 `autoscaling().v2()`, resumo de métricas (ex: `cpu: 45%/80%`)
+- `HorizontalScalerView` (`/autoscaling/horizontalscalers`): grid read-only com badge `current/max` colorido + ícone Manifest
+- `ManifestService`: case `horizontalscaler` adicionado
+- `MainLayout`: item colapsável Auto Scaling > Horizontal Scaler em PROJECT, posicionado após Workloads
+- Validado manualmente com aceite do usuário
 
 ### Sprint 16 — UX pós-login com cluster inacessível
 
