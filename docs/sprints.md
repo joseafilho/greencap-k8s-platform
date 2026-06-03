@@ -26,6 +26,7 @@
 | 16 | UX pós-login com cluster inacessível | ✅ Concluído |
 | 17 | Auto Scaling — HorizontalScaler (HPA) | ✅ Concluído |
 | 18 | Workloads — ReplicaSets | ✅ Concluído |
+| 19 | Storage — PersistentVolumeClaims | ✅ Concluído |
 
 ---
 
@@ -122,6 +123,18 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 19 — Storage: PersistentVolumeClaims
+
+- Termos canônicos `PersistentVolumeClaim` e `Storage` adicionados ao `CONTEXT.md`
+- `PersistentVolumeClaimInfo` record DTO: name, namespace, status, capacity, accessMode, storageClass, age
+- `StorageService.listPersistentVolumeClaims()`: Fabric8 `client.persistentVolumeClaims()`, status `Terminating` derivado de `metadata.deletionTimestamp`
+- `PersistentVolumeClaimsView` (`/storage/pvcs`): grid read-only com badge de status colorido + ícone Manifest
+- Badges: `Bound` → success, `Pending` → contrast, `Terminating` → contrast, `Lost` → error
+- `ManifestService`: case `persistentvolumeclaim` adicionado
+- `MainLayout`: seção Storage com sub-item "Volume Claims (PVC)" posicionado após Parameters
+- `samples/greencap-demo/manifests/03-pvc.yaml`: capacidade atualizada para `2Gi`
+- Validado manualmente com aceite do usuário
 
 ### Sprint 18 — Workloads: ReplicaSets
 

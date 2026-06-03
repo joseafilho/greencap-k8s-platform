@@ -92,6 +92,14 @@ _Avoid_: HPA, AutoScaler, HorizontalPodAutoscaler
 UI section grouping scaling-related Kubernetes resources. Currently contains HorizontalScaler. Inspired by AWS Auto Scaling grouping.
 _Avoid_: Scaling, autoscaling, scaler
 
+**PersistentVolumeClaim**:
+A request for persistent storage made by an application running in a Namespace. Namespaced. Kubernetes matches the claim against an available PersistentVolume. In GreenCap, displayed read-only under the Storage section. Status values: `Bound` (storage allocated and ready), `Pending` (awaiting a matching PersistentVolume), `Terminating` (deletion in progress — derived from `metadata.deletionTimestamp`), `Lost` (backing PersistentVolume disappeared).
+_Avoid_: PVC, Volume, disk
+
+**Storage**:
+UI section grouping persistent storage resources visible in GreenCap. Currently contains PersistentVolumeClaims. Inspired by AWS Storage grouping.
+_Avoid_: Volumes, persistent storage, disks
+
 **Topologia**:
 Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
 _Avoid_: Diagram, map, graph

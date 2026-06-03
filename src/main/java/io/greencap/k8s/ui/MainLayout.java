@@ -332,9 +332,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         SideNavItem networking  = buildRedeNavItem();
         SideNavItem parameters  = buildConfigNavItem();
         SideNavItem autoScaling = buildAutoScalingNavItem();
-        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters, autoScaling));
+        SideNavItem storage     = buildStorageNavItem();
+        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters, autoScaling, storage));
 
-        nav.addItem(dashboard, workloads, autoScaling, networking, parameters, disabledNavItem("Topologia", VaadinIcon.CLUSTER));
+        nav.addItem(dashboard, workloads, autoScaling, networking, parameters, storage, disabledNavItem("Topologia", VaadinIcon.CLUSTER));
         return nav;
     }
 
@@ -363,6 +364,12 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         SideNavItem autoScaling = new SideNavItem("Auto Scaling", HorizontalScalerView.class, VaadinIcon.SCALE.create());
         autoScaling.addItem(new SideNavItem("Horizontal Scaler", HorizontalScalerView.class, VaadinIcon.RESIZE_H.create()));
         return autoScaling;
+    }
+
+    private SideNavItem buildStorageNavItem() {
+        SideNavItem storage = new SideNavItem("Storage", PersistentVolumeClaimsView.class, VaadinIcon.STORAGE.create());
+        storage.addItem(new SideNavItem("Volume Claims (PVC)", PersistentVolumeClaimsView.class, VaadinIcon.DATABASE.create()));
+        return storage;
     }
 
     private SideNav buildObservabilidadeNav() {
