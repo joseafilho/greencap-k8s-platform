@@ -15,6 +15,7 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import elemental.json.JsonObject;
 import io.greencap.k8s.kubernetes.ClusterContext;
 import io.greencap.k8s.kubernetes.KubernetesOperationException;
 import io.greencap.k8s.kubernetes.TopologyService;
@@ -36,6 +37,7 @@ public class TopologiaView extends VerticalLayout implements BeforeEnterObserver
     private final VerticalLayout loadingLayout;
     private final VerticalLayout emptyLayout;
     private final TopologyGraphComponent graphComponent;
+    private final TopologyNodeDrawer drawer;
 
     public TopologiaView(TopologyService topologyService, ClusterContext clusterContext, ObjectMapper objectMapper) {
         this.topologyService = topologyService;
@@ -44,20 +46,27 @@ public class TopologiaView extends VerticalLayout implements BeforeEnterObserver
 
         setSizeFull();
         setPadding(true);
+        getStyle().set("position", "relative");
 
         noClusterMessage = UiConstants.buildNoClusterMessage();
-
         loadingLayout = buildLoadingLayout();
         emptyLayout = buildEmptyLayout();
 
         graphComponent = new TopologyGraphComponent();
         graphComponent.setSizeFull();
-        graphComponent.getElement().addEventListener("node-clicked", event -> {
-            String manifestUrl = event.getEventData().getString("event.detail.manifestUrl");
-            UI.getCurrent().navigate(manifestUrl);
-        }).addEventData("event.detail.manifestUrl");
 
-        add(noClusterMessage, loadingLayout, emptyLayout, graphComponent);
+        drawer = new TopologyNodeDrawer();
+
+        graphComponent.getElement().addEventListener("node-clicked", event -> {
+            JsonObject detail = event.getEventData().getObject("event.detail");
+            drawer.open(detail);
+        }).addEventData("event.detail");
+
+        graphComponent.getElement().addEventListener("canvas-tapped", event -> {
+            drawer.close();
+        });
+
+        add(noClusterMessage, loadingLayout, emptyLayout, graphComponent, drawer);
         setFlexGrow(1, graphComponent);
     }
 

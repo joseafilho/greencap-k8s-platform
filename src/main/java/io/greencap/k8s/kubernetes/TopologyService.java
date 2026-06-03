@@ -111,24 +111,28 @@ public class TopologyService {
         int ready = Optional.ofNullable(d.getStatus()).map(s -> s.getReadyReplicas()).orElse(0);
         int desired = Optional.ofNullable(d.getSpec()).map(s -> s.getReplicas()).orElse(0);
         String status = desired == 0 ? "Unknown" : (ready >= desired ? "Running" : "Degraded");
+        Map<String, String> labels = Optional.ofNullable(d.getMetadata().getLabels()).orElse(Map.of());
         return new TopologyNode(
                 nodeId("deployment", d.getMetadata().getName()),
                 d.getMetadata().getName(),
                 "Deployment",
                 status,
-                manifestUrl("deployment", namespace, d.getMetadata().getName()));
+                manifestUrl("deployment", namespace, d.getMetadata().getName()),
+                labels, ready, desired, "");
     }
 
     private TopologyNode replicaSetNode(ReplicaSet rs, String namespace) {
         int ready = Optional.ofNullable(rs.getStatus()).map(s -> s.getReadyReplicas()).orElse(0);
         int desired = Optional.ofNullable(rs.getSpec()).map(s -> s.getReplicas()).orElse(0);
         String status = desired == 0 ? "Unknown" : (ready >= desired ? "Running" : "Degraded");
+        Map<String, String> labels = Optional.ofNullable(rs.getMetadata().getLabels()).orElse(Map.of());
         return new TopologyNode(
                 nodeId("replicaset", rs.getMetadata().getName()),
                 rs.getMetadata().getName(),
                 "ReplicaSet",
                 status,
-                manifestUrl("replicaset", namespace, rs.getMetadata().getName()));
+                manifestUrl("replicaset", namespace, rs.getMetadata().getName()),
+                labels, ready, desired, "");
     }
 
     private TopologyNode podGroupNode(String rsName, List<Pod> group) {
@@ -142,26 +146,32 @@ public class TopologyService {
                 baseName,
                 countLabel,
                 status,
-                "workloads/pods");
+                "workloads/pods",
+                Map.of(), 0, count, "");
     }
 
     private TopologyNode podNode(Pod pod, String namespace) {
         String phase = Optional.ofNullable(pod.getStatus()).map(s -> s.getPhase()).orElse("Unknown");
+        Map<String, String> labels = Optional.ofNullable(pod.getMetadata().getLabels()).orElse(Map.of());
         return new TopologyNode(
                 nodeId("pod", pod.getMetadata().getName()),
                 pod.getMetadata().getName(),
                 "1 Pod",
                 phase,
-                manifestUrl("pod", namespace, pod.getMetadata().getName()));
+                manifestUrl("pod", namespace, pod.getMetadata().getName()),
+                labels, 0, 0, "");
     }
 
     private TopologyNode serviceNode(Service svc, String namespace) {
+        String serviceType = Optional.ofNullable(svc.getSpec()).map(s -> s.getType()).orElse("");
+        Map<String, String> labels = Optional.ofNullable(svc.getMetadata().getLabels()).orElse(Map.of());
         return new TopologyNode(
                 nodeId("service", svc.getMetadata().getName()),
                 svc.getMetadata().getName(),
                 "Service",
                 "Active",
-                manifestUrl("service", namespace, svc.getMetadata().getName()));
+                manifestUrl("service", namespace, svc.getMetadata().getName()),
+                labels, 0, 0, serviceType);
     }
 
     private String aggregatePodStatus(List<Pod> pods) {

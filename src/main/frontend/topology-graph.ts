@@ -8,6 +8,10 @@ interface NodeData {
   type: string;
   status: string;
   manifestUrl: string;
+  labels: Record<string, string>;
+  readyReplicas: number;
+  desiredReplicas: number;
+  serviceType: string;
 }
 
 interface EdgeData {
@@ -89,6 +93,11 @@ export class TopologyGraph extends LitElement {
           type: n.type,
           status: n.status,
           manifestUrl: n.manifestUrl,
+          labels: n.labels,
+          readyReplicas: n.readyReplicas,
+          desiredReplicas: n.desiredReplicas,
+          serviceType: n.serviceType,
+          nodeLabel: n.label,
           color: NODE_COLORS[n.type] ?? '#64748B',
           borderColor: STATUS_BORDER[n.status] ?? '#94A3B8',
         },
@@ -166,12 +175,30 @@ export class TopologyGraph extends LitElement {
 
     this.cy.on('tap', 'node', (event: EventObject) => {
       const node = event.target as NodeSingular;
-      const manifestUrl = node.data('manifestUrl') as string;
       this.dispatchEvent(new CustomEvent('node-clicked', {
-        detail: { manifestUrl },
+        detail: {
+          id: node.data('id') as string,
+          nodeLabel: node.data('nodeLabel') as string,
+          type: node.data('type') as string,
+          status: node.data('status') as string,
+          manifestUrl: node.data('manifestUrl') as string,
+          labels: node.data('labels') as Record<string, string>,
+          readyReplicas: node.data('readyReplicas') as number,
+          desiredReplicas: node.data('desiredReplicas') as number,
+          serviceType: node.data('serviceType') as string,
+        },
         bubbles: true,
         composed: true,
       }));
+    });
+
+    this.cy.on('tap', (event: EventObject) => {
+      if (event.target === this.cy) {
+        this.dispatchEvent(new CustomEvent('canvas-tapped', {
+          bubbles: true,
+          composed: true,
+        }));
+      }
     });
   }
 }

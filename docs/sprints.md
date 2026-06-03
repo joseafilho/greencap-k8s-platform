@@ -31,6 +31,7 @@
 | 21 | UX — Links entre recursos + Sidebar redimensionável | ✅ Concluído |
 | 22 | UX — Remoção de Namespace redundante + Filtros por coluna | ✅ Concluído |
 | 23 | Topology — visualização gráfica de objetos Kubernetes | ✅ Concluído |
+| 24 | Topology — Drawer lateral com resumo do recurso ao clicar no nó | ✅ Concluído |
 
 ---
 
@@ -268,6 +269,15 @@
 - `CONTEXT.md`: termos `Topologia`, `TopologyGraph`, `TopologyNode`, `TopologyEdge` refinados
 - `docs/adr/0003`: Cytoscape.js como motor de renderização — decisão registrada
 - Validado manualmente com aceite do usuário
+
+### Sprint 24 — Topology — Drawer lateral com resumo do recurso
+
+- `TopologyNode` enriquecido com `labels` (metadata do recurso), `readyReplicas`, `desiredReplicas` e `serviceType`
+- `TopologyService`: métodos `deploymentNode`, `replicaSetNode`, `serviceNode`, `podGroupNode`, `podNode` populam os novos campos sem custo adicional (dados já disponíveis em memória durante `buildGraph`)
+- `topology-graph.ts`: interface `NodeData` atualizada com os novos campos; evento `node-clicked` passa dados completos do nó (id, label, type, status, labels, réplicas, serviceType, manifestUrl); novo evento `canvas-tapped` disparado ao clicar no fundo do Cytoscape
+- `TopologyNodeDrawer`: novo componente Vaadin — overlay flutuante (`position: fixed; right: 0; width: 340px`), cabeçalho com badge de status e botão X, corpo por tipo (réplicas para Deployment/ReplicaSet, contagem para grupos de Pod, tipo e selector labels para Service), labels exibidas como chips, botão "Ver YAML" ou "Ver Pods" no rodapé
+- `TopologiaView`: clique no nó abre o drawer sem navegar; clicar em outro nó substitui o conteúdo; clicar no canvas fecha; X fecha explicitamente; pan e zoom não fecham o drawer
+- Validado manualmente pelo usuário
 
 ## Backlog
 
