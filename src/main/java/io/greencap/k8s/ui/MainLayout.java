@@ -19,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.theme.lumo.Lumo;
@@ -35,6 +36,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsModule("@vaadin/vaadin-lumo-styles/badge-global.js")
 public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final ClusterContext clusterContext;
@@ -341,9 +343,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         SideNavItem parameters  = buildConfigNavItem();
         SideNavItem autoScaling = buildAutoScalingNavItem();
         SideNavItem storage     = buildStorageNavItem();
-        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters, autoScaling, storage));
+        SideNavItem topologia = new SideNavItem("Topology", TopologiaView.class, VaadinIcon.CLUSTER.create());
+        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters, autoScaling, storage, topologia));
 
-        nav.addItem(dashboard, workloads, autoScaling, networking, parameters, storage, disabledNavItem("Topologia", VaadinIcon.CLUSTER));
+        nav.addItem(dashboard, workloads, autoScaling, networking, parameters, storage, topologia);
         return nav;
     }
 

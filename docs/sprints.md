@@ -30,6 +30,7 @@
 | 20 | Infrastructure — PersistentVolumes + StorageClasses | ✅ Concluído |
 | 21 | UX — Links entre recursos + Sidebar redimensionável | ✅ Concluído |
 | 22 | UX — Remoção de Namespace redundante + Filtros por coluna | ✅ Concluído |
+| 23 | Topology — visualização gráfica de objetos Kubernetes | ✅ Concluído |
 
 ---
 
@@ -254,6 +255,19 @@
 - Mensagem de teste de conexão corrigida: "Connection to X successful" (era "OK")
 - Issue de identidade visual (paleta de cores GreenCap) descartada nesta sprint — requer avaliação da abordagem de theming sem dependência de Node.js/Vite
 - Validado manualmente pelo usuário
+
+### Sprint 23 — Topology — visualização gráfica de objetos Kubernetes
+
+- `TopologyGraph`, `TopologyNode`, `TopologyEdge` records DTO em `kubernetes/dto/`
+- `TopologyService.buildGraph()`: busca Deployments, ReplicaSets (apenas ativos, `replicas > 0`), Pods e Services; monta nós e arestas via `ownerReferences` e label selectors
+- Pods agrupados por ReplicaSet dono: 1 nó por grupo com contagem (`1 Pod` / `N Pods`) e nome base sem hash aleatório; pods órfãos exibidos individualmente
+- `topology-graph.ts` (LitElement + Cytoscape.js): Web Component com layout `breadthfirst`, pan/zoom, cores por tipo de nó (Deployment=azul, ReplicaSet=roxo, Pod=verde, Service=amarelo), borda colorida por status, label com nome + tipo em duas linhas, evento `node-clicked`
+- `TopologyGraphComponent.java`: wrapper server-side com `@NpmPackage(cytoscape 3.30.2)` + `@NpmPackage(@types/cytoscape 3.21.7)`
+- `TopologiaView`: spinner assíncrono via virtual thread, estado vazio, erro com notificação BOTTOM_END, clique em nó navega para Manifest (grupos de Pods navegam para PodsView)
+- `MainLayout`: item "Topology" ativo no sidebar (era placeholder desabilitado); `@JsModule(badge-global.js)` adicionado para garantir estilos de badge após rebuild do bundle Vite
+- `CONTEXT.md`: termos `Topologia`, `TopologyGraph`, `TopologyNode`, `TopologyEdge` refinados
+- `docs/adr/0003`: Cytoscape.js como motor de renderização — decisão registrada
+- Validado manualmente com aceite do usuário
 
 ## Backlog
 

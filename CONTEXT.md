@@ -113,6 +113,18 @@ UI section within Settings grouping cluster-scoped infrastructure resources. Cur
 _Avoid_: Admin, cluster resources, system
 
 **Topologia**:
-Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
+UI view that renders an interactive graph of Kubernetes resources within a Namespace and the relationships between them. Node types: Deployment, ReplicaSet, Pod, Service. Edges derived from `ownerReferences` (Deployment→ReplicaSet→Pod) and label selector matching (Service→Pod). Isolated nodes (no edges) are shown — they signal misconfiguration. Clicking a node navigates to its Manifest. Pan and zoom are enabled.
 _Avoid_: Diagram, map, graph
+
+**TopologyGraph**:
+The data transfer object returned by `TopologyService` representing the full graph for a Namespace. Contains a flat list of `TopologyNode` and a flat list of `TopologyEdge`. Built server-side; the frontend only renders what it receives.
+_Avoid_: Graph data, node map
+
+**TopologyNode**:
+A single resource in the `TopologyGraph`. Carries: a unique `id` (type + name), a display `label` (resource name), a `type` (Deployment, ReplicaSet, Pod, Service), a `status` (for badge coloring), and a `manifestUrl` (deep-link to the Manifest view).
+_Avoid_: Node, vertex, element
+
+**TopologyEdge**:
+A directed relationship in the `TopologyGraph` between two `TopologyNode` ids. Direction always flows from owner/controller to owned (Deployment→ReplicaSet→Pod) or from Service to its target Pods.
+_Avoid_: Link, connection, arrow
 
