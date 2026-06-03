@@ -9,7 +9,7 @@ A registered access point to an external Kubernetes cluster. Stores an encrypted
 _Avoid_: Connection, server, environment
 
 **ConnectionStatus**:
-The result of the last connection attempt to a Cluster. Not a persistent authoritative state — a snapshot of what was observed. Values: `UNKNOWN` (never tested), `CONNECTED` (last check succeeded), `DISCONNECTED` (cluster unreachable — timeout or no route), `ERROR` (cluster responded but rejected the request — invalid credentials or permission denied).
+The result of the last connection attempt to a Cluster. Not a persistent authoritative state — a snapshot of what was observed. Values: `UNKNOWN` (never tested), `CONNECTED` (last check succeeded), `DISCONNECTED` (cluster unreachable — timeout or no route), `ERROR` (cluster responded but rejected the request — invalid credentials or permission denied). A failed namespace fetch on login transitions a `CONNECTED` cluster to `DISCONNECTED`; clusters already in any other status are not updated by this path — only the explicit "Test Connection" action can move them back to `CONNECTED`.
 _Avoid_: Status, health, availability
 
 **User**:

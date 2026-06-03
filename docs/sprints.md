@@ -23,6 +23,7 @@
 | 13 | Observabilidade: Metrics + UX global | ✅ Concluído |
 | 14 | Persistência do Namespace ativo | ✅ Concluído |
 | 15 | Visualização de Manifest (YAML) | ✅ Concluído |
+| 16 | UX pós-login com cluster inacessível | ✅ Concluído |
 
 ---
 
@@ -119,6 +120,17 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 16 — UX pós-login com cluster inacessível
+
+- `KubernetesClientFactory`: timeouts hardcoded com constantes legíveis — `CONNECTION_TIMEOUT_MS = 5s`, `REQUEST_TIMEOUT_MS = 10s`
+- `ClusterService.markAsDisconnectedIfConnected()`: transita `CONNECTED → DISCONNECTED` ao detectar falha
+- `MainLayout.loadNamespacesForCluster()`: executa em virtual thread; captura `KubernetesOperationException`, chama `markAsDisconnectedIfConnected`, esconde namespace selector, exibe notificação de erro no `BOTTOM_END`
+- Faixa de aviso (`clusterWarningBanner`) na segunda linha da navbar: visível quando cluster inacessível ou nenhum cluster configurado
+- Itens de menu dependentes de cluster (Dashboard, Workloads, Networking, Parameters, Events, Metrics) desabilitados via `opacity: 0.4` + `pointer-events: none` quando cluster inacessível
+- Settings › Clusters permanece sempre clicável para permitir correção da conexão
+- ADR-0002 documentado: estratégia de timeout curto + falha rápida
+- Validado manualmente: resposta em ≤ 10s com minikube parado; fluxo normal sem regressão com minikube rodando
 
 ### Sprint 15 — Visualização de Manifest (YAML)
 

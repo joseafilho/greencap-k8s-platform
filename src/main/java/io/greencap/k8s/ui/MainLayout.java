@@ -6,6 +6,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
@@ -23,6 +24,7 @@ import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import io.greencap.k8s.domain.cluster.Cluster;
+import io.greencap.k8s.domain.cluster.ClusterService;
 import io.greencap.k8s.domain.cluster.ConnectionStatus;
 import io.greencap.k8s.domain.user.UserService;
 import io.greencap.k8s.kubernetes.ClusterContext;
@@ -30,6 +32,7 @@ import io.greencap.k8s.kubernetes.KubernetesOperationException;
 import io.greencap.k8s.kubernetes.NamespaceService;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainLayout extends AppLayout implements AfterNavigationObserver {
@@ -37,18 +40,22 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     private final ClusterContext clusterContext;
     private final UserService userService;
     private final NamespaceService namespaceService;
+    private final ClusterService clusterService;
     private final HorizontalLayout clusterInfoLayout = new HorizontalLayout();
     private final HorizontalLayout namespaceLayout = new HorizontalLayout();
     private final ComboBox<String> namespaceCombo = new ComboBox<>();
+    private final Div clusterWarningBanner = new Div();
+    private final List<SideNavItem> clusterDependentNavItems = new ArrayList<>();
 
     private Cluster lastLoadedCluster = null;
     private String currentPath = "";
     private boolean suppressNavigation = false;
 
-    public MainLayout(ClusterContext clusterContext, UserService userService, NamespaceService namespaceService) {
+    public MainLayout(ClusterContext clusterContext, UserService userService, NamespaceService namespaceService, ClusterService clusterService) {
         this.clusterContext = clusterContext;
         this.userService = userService;
         this.namespaceService = namespaceService;
+        this.clusterService = clusterService;
         getElement().setAttribute("theme", Lumo.DARK);
         setPrimarySection(Section.DRAWER);
 
@@ -57,8 +64,10 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         clusterInfoLayout.setPadding(false);
 
         buildNamespaceLayout();
+        buildClusterWarningBanner();
 
         addToNavbar(buildNavbar());
+        addToNavbar(true, clusterWarningBanner);
         addToDrawer(buildDrawer());
 
         if (clusterContext.getCluster() == null) {
@@ -104,6 +113,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
         if (cluster == null) {
             lastLoadedCluster = null;
+            setClusterReachable(false);
             return;
         }
 
@@ -113,32 +123,97 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     }
 
     private void loadNamespacesForCluster(Cluster cluster) {
-        try {
-            List<String> names = namespaceService.listNamespaceNames(cluster);
+        namespaceCombo.setItems(List.of());
+        namespaceCombo.setPlaceholder("Loading...");
+        namespaceCombo.setEnabled(false);
 
-            String current = clusterContext.getNamespace();
-            String preferred;
-            if (current != null && names.contains(current)) {
-                preferred = current;
-            } else if (names.contains("default")) {
-                preferred = "default";
+        UI ui = UI.getCurrent();
+        Thread.ofVirtual().start(() -> {
+            try {
+                List<String> names = namespaceService.listNamespaceNames(cluster);
+                ui.access(() -> {
+                    String current = clusterContext.getNamespace();
+                    String preferred;
+                    if (current != null && names.contains(current)) {
+                        preferred = current;
+                    } else if (names.contains("default")) {
+                        preferred = "default";
+                    } else {
+                        preferred = names.isEmpty() ? null : names.get(0);
+                    }
+
+                    suppressNavigation = true;
+                    namespaceCombo.setItems(names);
+                    namespaceCombo.setPlaceholder("Select...");
+                    namespaceCombo.setEnabled(true);
+                    if (preferred != null) {
+                        namespaceCombo.setValue(preferred);
+                        clusterContext.setNamespace(preferred);
+                    }
+                    suppressNavigation = false;
+
+                    lastLoadedCluster = cluster;
+                    setClusterReachable(true);
+                });
+            } catch (KubernetesOperationException e) {
+                ui.access(() -> {
+                    clusterService.markAsDisconnectedIfConnected(cluster);
+                    updateClusterInfo();
+                    namespaceLayout.setVisible(false);
+                    setClusterReachable(false);
+                    Notification notification = Notification.show(
+                            "Cluster unreachable: " + cluster.getName(), UiConstants.NOTIFICATION_DURATION_MS, Notification.Position.BOTTOM_END);
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                });
+            }
+        });
+    }
+
+    private void buildClusterWarningBanner() {
+        Icon warningIcon = VaadinIcon.WARNING.create();
+        warningIcon.getStyle().set("flex-shrink", "0");
+
+        Span text = new Span("Cluster unreachable — check your connection settings in Settings › Clusters");
+        text.addClassNames(LumoUtility.FontSize.SMALL);
+
+        Button retryButton = new Button("Retry", VaadinIcon.REFRESH.create(), e -> retryClusterConnection());
+        retryButton.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+        retryButton.getStyle().set("flex-shrink", "0");
+
+        HorizontalLayout content = new HorizontalLayout(warningIcon, text, retryButton);
+        content.setDefaultVerticalComponentAlignment(FlexComponent.Alignment.CENTER);
+        content.setSpacing(true);
+        content.setPadding(false);
+        content.setWidthFull();
+        content.addClassNames(LumoUtility.JustifyContent.CENTER);
+
+        clusterWarningBanner.add(content);
+        clusterWarningBanner.getStyle()
+                .set("background", "var(--lumo-warning-color-10pct)")
+                .set("color", "var(--lumo-warning-text-color)")
+                .set("padding", "var(--lumo-space-xs) var(--lumo-space-m)")
+                .set("width", "100%");
+        clusterWarningBanner.setVisible(false);
+    }
+
+    public void refreshClusterState() {
+        lastLoadedCluster = null;
+        updateClusterInfo();
+        updateNamespaceSelector();
+    }
+
+    private void retryClusterConnection() {
+        refreshClusterState();
+    }
+
+    private void setClusterReachable(boolean reachable) {
+        clusterWarningBanner.setVisible(!reachable);
+        for (SideNavItem item : clusterDependentNavItems) {
+            if (reachable) {
+                item.getStyle().remove("opacity").remove("pointer-events");
             } else {
-                preferred = names.isEmpty() ? null : names.get(0);
+                item.getStyle().set("opacity", "0.4").set("pointer-events", "none");
             }
-
-            suppressNavigation = true;
-            namespaceCombo.setItems(names);
-            if (preferred != null) {
-                namespaceCombo.setValue(preferred);
-                clusterContext.setNamespace(preferred);
-            }
-            suppressNavigation = false;
-
-            lastLoadedCluster = cluster;
-        } catch (KubernetesOperationException e) {
-            Notification notification = Notification.show(
-                    "Failed to load namespaces: " + e.getMessage(), UiConstants.NOTIFICATION_DURATION_MS, Notification.Position.BOTTOM_END);
-            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         }
     }
 
@@ -251,13 +326,14 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     private SideNav buildVisaoGeralNav() {
         SideNav nav = new SideNav();
         nav.setWidthFull();
-        nav.addItem(
-                new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create()),
-                buildWorkloadsNavItem(),
-                buildRedeNavItem(),
-                buildConfigNavItem(),
-                disabledNavItem("Topologia", VaadinIcon.CLUSTER)
-        );
+
+        SideNavItem dashboard  = new SideNavItem("Dashboard", DashboardView.class, VaadinIcon.DASHBOARD.create());
+        SideNavItem workloads  = buildWorkloadsNavItem();
+        SideNavItem networking = buildRedeNavItem();
+        SideNavItem parameters = buildConfigNavItem();
+        clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters));
+
+        nav.addItem(dashboard, workloads, networking, parameters, disabledNavItem("Topologia", VaadinIcon.CLUSTER));
         return nav;
     }
 
@@ -284,10 +360,12 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
     private SideNav buildObservabilidadeNav() {
         SideNav nav = new SideNav();
         nav.setWidthFull();
-        nav.addItem(
-                new SideNavItem("Events", EventsView.class, VaadinIcon.RECORDS.create()),
-                new SideNavItem("Metrics", MetricsView.class, VaadinIcon.CHART.create())
-        );
+
+        SideNavItem events  = new SideNavItem("Events", EventsView.class, VaadinIcon.RECORDS.create());
+        SideNavItem metrics = new SideNavItem("Metrics", MetricsView.class, VaadinIcon.CHART.create());
+        clusterDependentNavItems.addAll(List.of(events, metrics));
+
+        nav.addItem(events, metrics);
         return nav;
     }
 

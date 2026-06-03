@@ -112,11 +112,7 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         clusterContext.setNamespace("default");
         persistActiveCluster(cluster);
         refreshGrid();
-        getUI().flatMap(ui -> ui.getChildren()
-                .filter(c -> c instanceof MainLayout)
-                .map(c -> (MainLayout) c)
-                .findFirst())
-                .ifPresent(MainLayout::updateClusterInfo);
+        getMainLayout().ifPresent(MainLayout::refreshClusterState);
         notify("Cluster \"" + cluster.getName() + "\" set as active", NotificationVariant.LUMO_SUCCESS);
     }
 
@@ -182,10 +178,13 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
     private void testConnection(Cluster cluster) {
         ConnectionStatus status = clusterService.testConnection(cluster);
         if (isActiveCluster(cluster)) {
-            clusterContext.setCluster(clusterService.findAll().stream()
+            clusterService.findAll().stream()
                     .filter(c -> c.getId().equals(cluster.getId()))
                     .findFirst()
-                    .orElse(null));
+                    .ifPresent(fresh -> {
+                        clusterContext.setCluster(fresh);
+                        getMainLayout().ifPresent(MainLayout::refreshClusterState);
+                    });
         }
         refreshGrid();
         if (status == ConnectionStatus.CONNECTED) {
@@ -286,6 +285,13 @@ public class ClustersView extends VerticalLayout implements BeforeEnterObserver 
         dialog.getFooter().add(cancelBtn, saveBtn);
         dialog.open();
         nameField.focus();
+    }
+
+    private java.util.Optional<MainLayout> getMainLayout() {
+        return getUI().flatMap(ui -> ui.getChildren()
+                .filter(c -> c instanceof MainLayout)
+                .map(c -> (MainLayout) c)
+                .findFirst());
     }
 
     private void refreshGrid() {

@@ -56,6 +56,14 @@ public class ClusterService {
     }
 
     @Transactional
+    public void markAsDisconnectedIfConnected(Cluster cluster) {
+        if (cluster.getConnectionStatus() == ConnectionStatus.CONNECTED) {
+            cluster.setConnectionStatus(ConnectionStatus.DISCONNECTED);
+            clusterRepository.save(cluster);
+        }
+    }
+
+    @Transactional
     public void deleteCluster(Cluster cluster) {
         clusterRepository.delete(cluster);
     }
