@@ -69,6 +69,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         addToNavbar(buildNavbar());
         addToNavbar(true, clusterWarningBanner);
         addToDrawer(buildDrawer());
+        initResizableDrawer();
 
         if (clusterContext.getCluster() == null) {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -119,6 +120,13 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
         if (!cluster.equals(lastLoadedCluster)) {
             loadNamespacesForCluster(cluster);
+        } else {
+            String contextNamespace = clusterContext.getNamespace();
+            if (contextNamespace != null && !contextNamespace.equals(namespaceCombo.getValue())) {
+                suppressNavigation = true;
+                namespaceCombo.setValue(contextNamespace);
+                suppressNavigation = false;
+            }
         }
     }
 
@@ -402,6 +410,70 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         infrastructure.addItem(new SideNavItem("Storage Classes", StorageClassesView.class, VaadinIcon.STORAGE.create()));
         clusterDependentNavItems.add(infrastructure);
         return infrastructure;
+    }
+
+    private void initResizableDrawer() {
+        getElement().executeJs("""
+            (function() {
+                const MIN_WIDTH = 180;
+                const MAX_WIDTH = 400;
+                const DEFAULT_WIDTH = 240;
+                const STORAGE_KEY = 'greencap-drawer-width';
+
+                const appLayout = $0;
+                const shadow = appLayout.shadowRoot;
+                if (!shadow) return;
+
+                const drawerPart  = shadow.querySelector('[part="drawer"]');
+                const navbarPart  = shadow.querySelector('[part="navbar"]');
+                const contentPart = shadow.querySelector('#content') || shadow.querySelector('[part="content"]');
+
+                function applyWidth(w) {
+                    appLayout.style.setProperty('--vaadin-app-layout-drawer-width', w + 'px');
+                    if (drawerPart)  drawerPart.style.width = w + 'px';
+                    if (navbarPart)  navbarPart.style.left  = w + 'px';
+                    if (contentPart) contentPart.style.marginInlineStart = w + 'px';
+                }
+
+                const saved = parseInt(localStorage.getItem(STORAGE_KEY));
+                const initial = (saved >= MIN_WIDTH && saved <= MAX_WIDTH) ? saved : DEFAULT_WIDTH;
+                applyWidth(initial);
+
+                const handle = document.createElement('div');
+                handle.style.cssText = 'position:fixed;top:0;left:' + initial + 'px;width:5px;height:100vh;cursor:col-resize;z-index:1000;background:transparent;';
+                document.body.appendChild(handle);
+
+                handle.addEventListener('mouseenter', () => { handle.style.background = 'rgba(255,255,255,0.15)'; });
+                handle.addEventListener('mouseleave', () => { if (!dragging) handle.style.background = 'transparent'; });
+
+                let dragging = false;
+                let startX = 0;
+                let startWidth = initial;
+
+                handle.addEventListener('mousedown', function(e) {
+                    dragging = true;
+                    startX = e.clientX;
+                    startWidth = parseInt(drawerPart ? drawerPart.style.width : initial) || initial;
+                    document.body.style.userSelect = 'none';
+                    e.preventDefault();
+                });
+
+                document.addEventListener('mousemove', function(e) {
+                    if (!dragging) return;
+                    const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startWidth + (e.clientX - startX)));
+                    applyWidth(newWidth);
+                    handle.style.left = newWidth + 'px';
+                });
+
+                document.addEventListener('mouseup', function() {
+                    if (!dragging) return;
+                    dragging = false;
+                    document.body.style.userSelect = '';
+                    handle.style.background = 'transparent';
+                    localStorage.setItem(STORAGE_KEY, parseInt(drawerPart ? drawerPart.style.width : initial));
+                });
+            })();
+        """, getElement());
     }
 
     private SideNavItem disabledNavItem(String label, VaadinIcon icon) {

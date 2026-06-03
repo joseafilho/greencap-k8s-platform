@@ -14,11 +14,13 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import io.greencap.k8s.domain.cluster.Cluster;
+import io.greencap.k8s.domain.user.UserService;
 import io.greencap.k8s.kubernetes.ClusterContext;
 import io.greencap.k8s.kubernetes.KubernetesOperationException;
 import io.greencap.k8s.kubernetes.StorageService;
 import io.greencap.k8s.kubernetes.dto.PersistentVolumeInfo;
 import jakarta.annotation.security.PermitAll;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
 
@@ -29,13 +31,15 @@ public class PersistentVolumesView extends VerticalLayout implements BeforeEnter
 
     private final StorageService storageService;
     private final ClusterContext clusterContext;
+    private final UserService userService;
 
     private final Grid<PersistentVolumeInfo> grid = new Grid<>(PersistentVolumeInfo.class, false);
     private final VerticalLayout noClusterMessage;
 
-    public PersistentVolumesView(StorageService storageService, ClusterContext clusterContext) {
+    public PersistentVolumesView(StorageService storageService, ClusterContext clusterContext, UserService userService) {
         this.storageService = storageService;
         this.clusterContext = clusterContext;
+        this.userService = userService;
 
         setSizeFull();
         setPadding(true);
@@ -63,7 +67,7 @@ public class PersistentVolumesView extends VerticalLayout implements BeforeEnter
         grid.addColumn(PersistentVolumeInfo::accessMode).setHeader("Access Mode").setWidth("150px").setResizable(true);
         grid.addColumn(PersistentVolumeInfo::reclaimPolicy).setHeader("Reclaim Policy").setWidth("130px").setResizable(true);
         grid.addColumn(PersistentVolumeInfo::storageClass).setHeader("Storage Class").setFlexGrow(1).setResizable(true);
-        grid.addColumn(PersistentVolumeInfo::claim).setHeader("Claim").setFlexGrow(2).setResizable(true);
+        grid.addComponentColumn(pv -> claimLink(pv.claim())).setHeader("Claim").setFlexGrow(2).setResizable(true);
         grid.addColumn(PersistentVolumeInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
         grid.addComponentColumn(pv -> {
             var icon = VaadinIcon.CODE.create();
@@ -92,6 +96,24 @@ public class PersistentVolumesView extends VerticalLayout implements BeforeEnter
             grid.setItems(Collections.emptyList());
             return false;
         }
+    }
+
+    private com.vaadin.flow.component.Component claimLink(String claim) {
+        if ("—".equals(claim)) return new Span(claim);
+        Button link = new Button(claim);
+        link.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+        link.getStyle().set("cursor", "pointer");
+        link.addClickListener(e -> {
+            String[] parts = claim.split("/", 2);
+            if (parts.length == 2) {
+                String namespace = parts[0];
+                String username = SecurityContextHolder.getContext().getAuthentication().getName();
+                clusterContext.setNamespace(namespace);
+                userService.updateActiveNamespace(username, namespace);
+            }
+            UI.getCurrent().navigate(PersistentVolumeClaimsView.class);
+        });
+        return link;
     }
 
     private Span statusBadge(String status) {

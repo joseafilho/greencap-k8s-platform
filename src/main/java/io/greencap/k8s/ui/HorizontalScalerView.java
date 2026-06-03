@@ -59,7 +59,8 @@ public class HorizontalScalerView extends VerticalLayout implements BeforeEnterO
     private void buildGrid() {
         grid.addColumn(HorizontalScalerInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
         grid.addColumn(HorizontalScalerInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
-        grid.addColumn(HorizontalScalerInfo::target).setHeader("Target").setFlexGrow(1).setResizable(true);
+        grid.addComponentColumn(h -> navigationLink(h.target(), DeploymentsView.class))
+                .setHeader("Target").setFlexGrow(1).setResizable(true);
         grid.addColumn(HorizontalScalerInfo::minReplicas).setHeader("Min").setWidth("70px").setResizable(true);
         grid.addComponentColumn(h -> replicasBadge(h.currentReplicas(), h.maxReplicas()))
                 .setHeader("Current / Max").setWidth("120px").setResizable(true);
@@ -93,6 +94,15 @@ public class HorizontalScalerView extends VerticalLayout implements BeforeEnterO
             grid.setItems(Collections.emptyList());
             return false;
         }
+    }
+
+    private com.vaadin.flow.component.Component navigationLink(String label, Class<? extends com.vaadin.flow.component.Component> target) {
+        if ("—".equals(label)) return new Span(label);
+        Button link = new Button(label);
+        link.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+        link.getStyle().set("cursor", "pointer");
+        link.addClickListener(e -> UI.getCurrent().navigate(target));
+        return link;
     }
 
     private Span replicasBadge(int current, int max) {

@@ -28,6 +28,7 @@
 | 18 | Workloads — ReplicaSets | ✅ Concluído |
 | 19 | Storage — PersistentVolumeClaims | ✅ Concluído |
 | 20 | Infrastructure — PersistentVolumes + StorageClasses | ✅ Concluído |
+| 21 | UX — Links entre recursos + Sidebar redimensionável | ✅ Concluído |
 
 ---
 
@@ -124,6 +125,18 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 21 — UX: Links entre recursos + Sidebar redimensionável
+
+- `PersistentVolumesView`: coluna Claim clicável — troca namespace ativo + navega para PersistentVolumeClaimsView
+- `ReplicaSetView`: coluna Owner clicável — navega para DeploymentsView
+- `HorizontalScalerView`: coluna Target clicável — navega para DeploymentsView
+- Valor `—` não clicável em todas as três views
+- Sidebar redimensionável via alça na borda direita do drawer (drag & drop)
+- Largura persistida em `localStorage` com chave `greencap-drawer-width`
+- Limites: mínimo 180px, padrão 240px, máximo 400px
+- Implementação via shadow DOM direto: `drawerPart.width`, `navbarPart.left`, `contentPart.marginInlineStart`
+- Validado manualmente com aceite do usuário
 
 ### Sprint 20 — Infrastructure: PersistentVolumes + StorageClasses
 

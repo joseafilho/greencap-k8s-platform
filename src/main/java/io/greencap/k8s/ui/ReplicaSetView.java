@@ -59,7 +59,8 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
     private void buildGrid() {
         grid.addColumn(ReplicaSetInfo::name).setHeader("Name").setSortable(true).setFlexGrow(2).setResizable(true);
         grid.addColumn(ReplicaSetInfo::namespace).setHeader("Namespace").setSortable(true).setResizable(true);
-        grid.addColumn(ReplicaSetInfo::owner).setHeader("Owner").setFlexGrow(1).setResizable(true);
+        grid.addComponentColumn(rs -> navigationLink(rs.owner(), DeploymentsView.class))
+                .setHeader("Owner").setFlexGrow(1).setResizable(true);
         grid.addComponentColumn(rs -> replicasBadge(rs.ready(), rs.desired()))
                 .setHeader("Ready / Desired").setWidth("130px").setResizable(true);
         grid.addColumn(ReplicaSetInfo::age).setHeader("Age").setWidth("80px").setResizable(true);
@@ -91,6 +92,15 @@ public class ReplicaSetView extends VerticalLayout implements BeforeEnterObserve
             grid.setItems(Collections.emptyList());
             return false;
         }
+    }
+
+    private com.vaadin.flow.component.Component navigationLink(String label, Class<? extends com.vaadin.flow.component.Component> target) {
+        if ("—".equals(label)) return new Span(label);
+        Button link = new Button(label);
+        link.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+        link.getStyle().set("cursor", "pointer");
+        link.addClickListener(e -> UI.getCurrent().navigate(target));
+        return link;
     }
 
     private Span replicasBadge(int ready, int desired) {
