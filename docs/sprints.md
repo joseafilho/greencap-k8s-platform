@@ -27,6 +27,7 @@
 | 17 | Auto Scaling — HorizontalScaler (HPA) | ✅ Concluído |
 | 18 | Workloads — ReplicaSets | ✅ Concluído |
 | 19 | Storage — PersistentVolumeClaims | ✅ Concluído |
+| 20 | Infrastructure — PersistentVolumes + StorageClasses | ✅ Concluído |
 
 ---
 
@@ -123,6 +124,19 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 20 — Infrastructure: PersistentVolumes + StorageClasses
+
+- Termos canônicos `PersistentVolume`, `StorageClass` e `Infrastructure` adicionados ao `CONTEXT.md`
+- `PersistentVolumeInfo` record DTO: name, status, capacity, accessMode, reclaimPolicy, storageClass, claim, age
+- `StorageClassInfo` record DTO: name, provisioner, reclaimPolicy, volumeBindingMode, allowVolumeExpansion, age
+- `StorageService`: métodos `listPersistentVolumes()` e `listStorageClasses()` — ambos cluster-scoped, sem filtro de namespace
+- `PersistentVolumesView` (`/infrastructure/pvs`): grid read-only com badge de status + coluna Claim (`namespace/name`)
+- `StorageClassesView` (`/infrastructure/storageclasses`): grid read-only sem badge
+- Badges PV: `Available` → success, `Bound/Released/Terminating` → contrast, `Failed` → error
+- `ManifestService`: cases `persistentvolume` e `storageclass` adicionados
+- `MainLayout`: item pai "Infrastructure" em SETTINGS com sub-itens "Persistent Volumes (PV)" e "Storage Classes"
+- Validado manualmente com aceite do usuário
 
 ### Sprint 19 — Storage: PersistentVolumeClaims
 

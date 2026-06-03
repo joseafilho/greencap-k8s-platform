@@ -100,6 +100,18 @@ _Avoid_: PVC, Volume, disk
 UI section grouping persistent storage resources visible in GreenCap. Currently contains PersistentVolumeClaims. Inspired by AWS Storage grouping.
 _Avoid_: Volumes, persistent storage, disks
 
+**PersistentVolume**:
+A cluster-scoped storage resource representing a physical or virtual disk provisioned in the cluster. Not namespaced. Bound one-to-one to a PersistentVolumeClaim. In GreenCap, displayed read-only under Infrastructure in the Settings section. Status values: `Available` (free, no claim), `Bound` (allocated to a PVC), `Released` (PVC deleted, awaiting reclaim), `Terminating` (deletion in progress), `Failed` (provisioning error).
+_Avoid_: PV, disk, volume
+
+**StorageClass**:
+A cluster-scoped Kubernetes resource that defines how PersistentVolumes are dynamically provisioned (provisioner, reclaim policy, binding mode, expansion support). Not namespaced. In GreenCap, displayed read-only under Infrastructure in the Settings section.
+_Avoid_: SC, storage profile, storage tier
+
+**Infrastructure**:
+UI section within Settings grouping cluster-scoped infrastructure resources. Currently contains PersistentVolumes and StorageClasses. Distinct from Storage (which is namespace-scoped) and Settings (which is GreenCap platform configuration).
+_Avoid_: Admin, cluster resources, system
+
 **Topologia**:
 Planned future view — an animated graph visualizing all objects within a Namespace and the relationships between them (e.g., Deployment → Pod → Service). Not implemented; exists as a disabled sidebar placeholder.
 _Avoid_: Diagram, map, graph

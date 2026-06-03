@@ -389,10 +389,19 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         nav.setWidthFull();
         nav.addItem(
                 new SideNavItem("Clusters", ClustersView.class, VaadinIcon.SERVER.create()),
+                buildInfrastructureNavItem(),
                 disabledNavItem("Users", VaadinIcon.USERS),
                 disabledNavItem("Settings", VaadinIcon.COG)
         );
         return nav;
+    }
+
+    private SideNavItem buildInfrastructureNavItem() {
+        SideNavItem infrastructure = new SideNavItem("Infrastructure", PersistentVolumesView.class, VaadinIcon.CLOUD.create());
+        infrastructure.addItem(new SideNavItem("Persistent Volumes (PV)", PersistentVolumesView.class, VaadinIcon.HARDDRIVE.create()));
+        infrastructure.addItem(new SideNavItem("Storage Classes", StorageClassesView.class, VaadinIcon.STORAGE.create()));
+        clusterDependentNavItems.add(infrastructure);
+        return infrastructure;
     }
 
     private SideNavItem disabledNavItem(String label, VaadinIcon icon) {
