@@ -25,6 +25,7 @@
 | 15 | Visualização de Manifest (YAML) | ✅ Concluído |
 | 16 | UX pós-login com cluster inacessível | ✅ Concluído |
 | 17 | Auto Scaling — HorizontalScaler (HPA) | ✅ Concluído |
+| 18 | Workloads — ReplicaSets | ✅ Concluído |
 
 ---
 
@@ -121,6 +122,16 @@
 - Issues: 01 refactor UiConstants · 02 MainLayout · 03 Workloads views · 04 Networking/Parameters views · 05 ClustersView · 06 exception messages
 - Fix pós-testes: cards do Dashboard traduzidos + largura da coluna Active em ClustersView ajustada
 - Validado manualmente com cluster minikube e namespace greencap-demo
+
+### Sprint 18 — Workloads: ReplicaSets
+
+- Termo canônico `ReplicaSet` adicionado ao `CONTEXT.md`; `Workload` expandido para incluir ReplicaSet; `_Avoid_: ReplicaSet` removido de Deployment
+- `ReplicaSetInfo` record DTO: name, namespace, owner, desired, ready, age
+- `WorkloadService.listReplicaSets()`: owner extraído de `ownerReferences[kind=Deployment]`, órfãos exibem `—`
+- `ReplicaSetView` (`/workloads/replicasets`): grid read-only com badge `ready/desired` colorido + ícone Manifest
+- `ManifestService`: case `replicaset` adicionado
+- `MainLayout`: ReplicaSets adicionado em Workloads entre Deployments e Pods
+- Validado manualmente: rollout do deployment `frontend` no namespace `greencap-demo` gerou novos ReplicaSets visíveis com histórico e coluna Owner correta
 
 ### Sprint 17 — Auto Scaling: HorizontalScaler (HPA)
 

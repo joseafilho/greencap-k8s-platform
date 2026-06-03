@@ -26,6 +26,7 @@ public class ManifestService {
                 case "service"    -> client.services().inNamespace(namespace).withName(name).get();
                 case "configmap"  -> client.configMaps().inNamespace(namespace).withName(name).get();
                 case "secret"     -> client.secrets().inNamespace(namespace).withName(name).get();
+                case "replicaset"       -> client.apps().replicaSets().inNamespace(namespace).withName(name).get();
                 case "horizontalscaler" -> client.autoscaling().v2().horizontalPodAutoscalers().inNamespace(namespace).withName(name).get();
                 default -> throw new KubernetesOperationException("Unknown resource type: " + resourceType, null);
             };
