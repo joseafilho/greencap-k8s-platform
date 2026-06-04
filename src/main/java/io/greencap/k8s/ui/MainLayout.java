@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsModule("@vaadin/vaadin-lumo-styles/badge-global.js")
+@JsModule("@vaadin/vaadin-lumo-styles/utility-global.js")
 public class MainLayout extends AppLayout implements AfterNavigationObserver {
 
     private final ClusterContext clusterContext;

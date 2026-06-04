@@ -32,6 +32,7 @@
 | 22 | UX — Remoção de Namespace redundante + Filtros por coluna | ✅ Concluído |
 | 23 | Topology — visualização gráfica de objetos Kubernetes | ✅ Concluído |
 | 24 | Topology — Drawer lateral com resumo do recurso ao clicar no nó | ✅ Concluído |
+| 25 | Regressão de UI — labels do sidebar sem formatação | ✅ Concluído |
 
 ---
 
@@ -269,6 +270,13 @@
 - `CONTEXT.md`: termos `Topologia`, `TopologyGraph`, `TopologyNode`, `TopologyEdge` refinados
 - `docs/adr/0003`: Cytoscape.js como motor de renderização — decisão registrada
 - Validado manualmente com aceite do usuário
+
+### Sprint 25 — Regressão de UI — labels do sidebar sem formatação
+
+- Causa raiz: `utility-global.js` do Vaadin Lumo não estava importado no `MainLayout`, tornando ineficazes as classes `LumoUtility.FontSize`, `LumoUtility.FontWeight`, `LumoUtility.Padding` e `LumoUtility.TextColor` usadas nos labels PROJECT, OBSERVABILITY e SETTINGS
+- A regressão foi exposta pela reconstrução do bundle Vite na sprint 24 (adição do Cytoscape.js), que parou de resolver o módulo implicitamente em dev mode
+- Correção: adicionado `@JsModule("@vaadin/vaadin-lumo-styles/utility-global.js")` ao `MainLayout`, seguindo o mesmo padrão do `badge-global.js` adicionado na sprint 22
+- Validado manualmente pelo usuário
 
 ### Sprint 24 — Topology — Drawer lateral com resumo do recurso
 
