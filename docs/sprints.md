@@ -33,6 +33,7 @@
 | 23 | Topology — visualização gráfica de objetos Kubernetes | ✅ Concluído |
 | 24 | Topology — Drawer lateral com resumo do recurso ao clicar no nó | ✅ Concluído |
 | 25 | Regressão de UI — labels do sidebar sem formatação | ✅ Concluído |
+| 26 | Migração para repositório oficial greencapk8s/greencap-k8s | ✅ Concluído |
 
 ---
 
@@ -270,6 +271,14 @@
 - `CONTEXT.md`: termos `Topologia`, `TopologyGraph`, `TopologyNode`, `TopologyEdge` refinados
 - `docs/adr/0003`: Cytoscape.js como motor de renderização — decisão registrada
 - Validado manualmente com aceite do usuário
+
+### Sprint 26 — Migração para repositório oficial greencapk8s/greencap-k8s
+
+- Todos os arquivos do repositório `joseafilho/greencap-k8s-platform` (sprints 1–26) migrados para `greencapk8s/greencap-k8s`
+- Destino limpo antes da migração; histórico de infra anterior preservado na branch `feat/before-bigbang`
+- Excluídos da cópia: `.git/`, `node_modules/`, `build/`
+- Commit de migração destacado com referência à origem e stack utilizada
+- Decisão registrada: histórico git do destino preservado (sem reset), commit de migração adicionado em cima
 
 ### Sprint 25 — Regressão de UI — labels do sidebar sem formatação
 
