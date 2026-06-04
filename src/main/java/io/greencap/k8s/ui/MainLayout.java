@@ -347,7 +347,7 @@ public class MainLayout extends AppLayout implements AfterNavigationObserver {
         SideNavItem topologia = new SideNavItem("Topology", TopologiaView.class, VaadinIcon.CLUSTER.create());
         clusterDependentNavItems.addAll(List.of(dashboard, workloads, networking, parameters, autoScaling, storage, topologia));
 
-        nav.addItem(dashboard, workloads, autoScaling, networking, parameters, storage, topologia);
+        nav.addItem(dashboard, topologia, workloads, autoScaling, networking, parameters, storage);
         return nav;
     }
 
